@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.env*
+.taste-skill
+test-results
+*.tsbuildinfo
+.DS_Store
+public/media/*.png
+public/media/sky-poster.jpg
+public/figures/*.png
