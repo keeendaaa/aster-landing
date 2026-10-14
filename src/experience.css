@@ -1,0 +1,207 @@
+/* A shared optical vocabulary: saturated blue fields, milled pale-blue solids,
+   deep night instrument windows and the same lime active state as the hero. */
+:root { --cobalt:#093bcd; --cobalt-dark:#0a2b8a; --instrument:#07133c; --night-surface:#0b2053; --night-muted:#c5d7fa; }
+.site-overview { padding-top:32px; padding-bottom:100px; }
+.site-overview .section-heading { margin-bottom:48px; }
+.overview-facts { display:grid; grid-template-columns:repeat(3,1fr); gap:50px; }
+.overview-facts p { margin-top:12px; color:var(--muted); }
+.overview-facts h3 { font-family:var(--display); font-size:var(--lead); }
+.module-story { background:var(--cobalt); color:var(--paper); overflow:clip; }
+.module-story .section-heading p { color:var(--paper); }
+.module-workbench { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:50px; align-items:center; }
+.anatomy-figure { position:relative; margin:0; min-width:0; overflow:hidden; }
+.module-figure { background:var(--cobalt-dark); }
+.figure-top,.figure-bottom { position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:24px; font-size:var(--small); }
+.figure-top { align-items:start; color:var(--night-muted); }
+.figure-top>span:first-child { color:var(--paper); }
+.live-state { text-align:right; max-width:180px; }
+.live-state i,.aircraft-state i { display:inline-block; width:5px; height:5px; margin-right:8px; border-radius:50%; background:var(--accent); vertical-align:middle; }
+.anatomy-art { display:block; width:100%; height:auto; overflow:visible; --anatomy-paper:#85a8dd; --anatomy-face:#b4d2ff; --anatomy-top:#e2edff; --anatomy-shade-0:#3f69a6; --anatomy-shade-1:#6589be; --anatomy-shade-2:#89acdd; --anatomy-shade-3:#a8c7ed; --anatomy-hi:#e9f5ff; --anatomy-mid:#8faeda; --anatomy-lo:#315b95; --anatomy-faint:#254a83; --anatomy-lit:#edff8d; --anatomy-lit-top:#dfff00; --anatomy-lit-shade:#8fba1e; --anatomy-weight:.65px; }
+.anatomy-ground { fill:var(--night); opacity:.17; }
+.module-figure .anatomy-art { margin:-15px 0 -30px; }
+.figure-button { display:inline-flex; gap:10px; align-items:center; min-height:44px; border:0; border-radius:100px; padding:12px 16px; background:var(--paper); color:var(--ink); font-size:var(--small); transition:transform .18s var(--ease); }
+.figure-button:hover { transform:translateY(-2px); }
+.figure-button:active { transform:scale(.97); }
+.module-description { min-width:0; }
+.module-description .gooey-nav { --gn-x:13px; --gn-y:10px; }
+.module-description .gooey-nav__list { row-gap:10px; }
+.module-detail { position:relative; z-index:1; margin-top:42px; min-height:240px; }
+.module-detail h3 { font-family:var(--display); font-size:clamp(24px,2.4vw,32px); line-height:1.15; font-weight:400; letter-spacing:-.04em; max-width:350px; }
+.module-detail>p { margin-top:20px; max-width:410px; }
+.node-fact { display:flex; align-items:start; gap:10px; font-size:var(--small); color:var(--night-muted); }
+.node-fact svg { flex:none; margin-top:3px; color:var(--accent); }
+.module-annotation { background:var(--cobalt-dark); padding:24px; margin-top:20px; }
+.module-annotation>span { display:block; font-family:var(--display); font-size:var(--lead); line-height:1.2; letter-spacing:-.02em; }
+.module-annotation p { font-size:var(--small); color:var(--night-muted); margin-top:14px; }
+.principle-story { background:var(--night); color:var(--paper); }
+.principle-story .section-heading p { color:var(--night-muted); }
+.principle-layout { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:60px; align-items:start; }
+.principle-console { min-width:0; }
+.console-header { display:flex; justify-content:space-around; font-size:var(--small); margin-bottom:20px; color:var(--night-muted); }
+.star-instrument { width:100%; display:block; }
+.instrument-case { fill:var(--night-surface); }
+.instrument-screen { fill:var(--night); }
+.instrument-screw { fill:#4d6799; }
+.instrument-slot { stroke:var(--night); stroke-width:2; }
+.background-star { fill:#9fbef5; opacity:.45; }
+.observed-star { fill:var(--paper); }
+.detected-pattern { stroke:var(--accent); stroke-width:1.2; fill:none; stroke-linejoin:round; }
+.star-detection { fill:none; stroke:var(--accent); stroke-width:1.2; }
+.catalogue-star { fill:#83a9ef; }
+.catalogue-pattern { stroke:#527bbf; stroke-width:1.2; fill:none; }
+.matched-rotation { opacity:.9; }
+.instrument-vent { fill:var(--night); }
+.instrument-light { fill:var(--accent); }
+.dial-body { fill:#4970aa; }
+.dial-face { fill:var(--night); }
+.dial-tick { stroke:#779bda; stroke-width:1.3; }
+.dial-needle { stroke:var(--accent); stroke-width:2; transition:transform .35s var(--ease); }
+.dial-hub { fill:var(--accent); }
+.instrument-controls { margin:24px 12px 0; }
+.instrument-controls label { display:flex; justify-content:space-between; font-size:var(--small); }
+.instrument-controls output { font-variant-numeric:tabular-nums; }
+.instrument-controls input { width:100%; accent-color:var(--accent); margin:20px 0 8px; min-height:28px; cursor:ew-resize; }
+.range-ends { display:flex; justify-content:space-between; font-size:var(--small); color:var(--night-muted); }
+.principle-tabs { display:flex; flex-direction:column; gap:8px; }
+.principle-tabs button { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:17px 20px; text-align:left; border:0; font-size:var(--body-size); background:var(--night-surface); color:var(--paper); min-height:54px; transition:background-color .2s; }
+.principle-tabs button[aria-pressed=true] { background:var(--accent); color:var(--night); }
+.principle-tabs button:hover { transform:translateX(3px); }
+.principle-copy { margin-top:30px; }
+.principle-copy h3 { font-family:var(--display); font-size:var(--lead); font-weight:400; }
+.principle-copy p { color:var(--night-muted); margin-top:14px; }
+.roll-result { margin-top:30px; display:flex; flex-direction:column; gap:10px; }
+.roll-result>span { font-size:var(--small); color:var(--night-muted); }
+.roll-result output { font-family:var(--display); font-size:var(--heading); letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1.05; }
+.figure-disclaimer { color:var(--muted); font-size:var(--small); margin-top:30px; max-width:850px; }
+.principle-story .figure-disclaimer { color:var(--night-muted); }
+.aircraft-layout { display:grid; grid-template-columns:.8fr 1.2fr; gap:60px; align-items:center; }
+.integration-copy { display:flex; flex-direction:column; gap:30px; }
+.integration-point h3 { font-family:var(--display); font-weight:400; }
+.integration-point p { margin-top:12px; color:var(--muted); }
+.aircraft-figure { background:var(--instrument); color:var(--paper); }
+.aircraft-figure .anatomy-art { position:relative; z-index:1; }
+.aircraft-figure .figure-top>span { color:var(--night-muted); }
+.aircraft-pause { display:grid; place-items:center; margin:-12px -8px -12px 0; width:44px; height:44px; background:none; color:var(--paper); border:0; }
+.aircraft-pause:hover { color:var(--accent); }
+.aircraft-sky { position:absolute; top:70px; left:0; right:0; height:35%; transition:opacity .5s; }
+.aircraft-sky i { position:absolute; width:2px; height:2px; background:#cce5ff; border-radius:50%; }
+.sky-closed .aircraft-sky { opacity:0; }
+.sky-closed .aircraft-state i { background:var(--night-muted); }
+.rotor-blades path { fill:#b9d7ff; stroke:#e2efff; stroke-width:.6; }
+.sky-controls { display:flex; gap:8px; padding:0 24px 24px; }
+.sky-controls button { background:var(--night-surface); color:var(--paper); border:0; border-radius:100px; padding:12px 16px; min-height:44px; font-size:var(--small); }
+.sky-controls button[aria-pressed=true] { background:var(--accent); color:var(--night); }
+.mission-section { background:var(--night); color:var(--paper); }
+.mission-section .section-heading p { color:var(--night-muted); }
+.mission-section .demo-frame { background:var(--instrument); }
+.mission-section .scenario { color:var(--paper); }
+.mission-section .scenario.active,.mission-section .scenario:hover { background:var(--night-surface); }
+.mission-section .scenario.active .scenario-title { color:var(--accent); }
+.mission-section .scenario-copy,.mission-section .demo-caption { color:var(--night-muted); }
+.mission-section .standalone-link:hover { color:var(--accent); }
+.mission-note { margin-top:50px; display:grid; grid-template-columns:1fr 1fr; gap:60px; }
+.mission-note h3 { font-family:var(--display); font-weight:400; }
+.mission-note p { margin-top:12px; color:var(--night-muted); }
+.mission-gallery { display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:12px; margin-top:44px; }
+.mission-gallery figure { margin:0; background:var(--instrument); }
+.mission-gallery img { height:210px; }
+.mission-gallery figcaption { font-size:var(--small); padding:16px 18px; color:var(--night-muted); }
+.applications { padding-top:100px; }
+.night-environment { margin:0 0 54px; }
+.night-film { position:relative; background:var(--night); aspect-ratio:16/9; overflow:hidden; }
+.night-film video { display:block; width:100%; height:100%; object-fit:contain; }
+.night-film-control { position:absolute; right:18px; bottom:18px; display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; border-radius:50%; background:var(--night); color:var(--paper); transition:color .18s,transform .18s var(--ease); }
+.night-film-control:hover { color:var(--accent); transform:scale(1.05); }
+.night-film-control:focus-visible { outline-color:var(--accent); }
+.night-environment figcaption { padding-top:16px; font-size:var(--small); color:var(--muted); line-height:1.6; max-width:780px; }
+.application-layout { grid-template-columns:1fr 1fr; gap:70px; }
+.application-image { height:510px; }
+.use-case-list { display:flex; flex-direction:column; gap:28px; margin-top:30px; }
+.use-case-list h3 { font-family:var(--display); font-weight:400; }
+.use-case-list p { margin-top:10px; color:var(--muted); }
+.applications .large-statement { font-size:var(--lead); }
+.contact-section { width:100%; padding:90px 0; background:var(--cobalt); color:var(--paper); }
+.contact-panel { width:min(1184px,calc(100% - 96px)); margin:auto; gap:70px; background:none; }
+.contact-copy { padding:0; }
+.contact-mark { color:var(--paper); }
+.contact-copy p { color:var(--paper); }
+.contact-form { background:var(--cobalt-dark); padding:36px; }
+.contact-form input,.contact-form textarea { color:var(--paper); background:#153f9f; }
+.contact-form input::placeholder,.contact-form textarea::placeholder { color:var(--night-muted); }
+.contact-form .button { background:var(--accent); color:var(--night); }
+.contact-form input:focus,.contact-form textarea:focus { outline-color:var(--accent); }
+.contact-form .form-note { color:var(--night-muted); }
+.module-story button:focus-visible,.module-story a:focus-visible,.principle-story button:focus-visible,.principle-story input:focus-visible,.aircraft-figure button:focus-visible,.mission-section button:focus-visible,.contact-section button:focus-visible { outline-color:var(--accent); }
+
+@media(max-width:1100px) {
+  .module-workbench { gap:30px; grid-template-columns:1.1fr 1fr; }
+  .figure-top,.figure-bottom { padding:18px; }
+  .figure-top .live-state { display:none; }
+  .figure-bottom { flex-wrap:wrap; }
+  .principle-layout,.aircraft-layout { gap:32px; }
+  .contact-panel { width:calc(100% - 64px); gap:40px; }
+  .module-description .gooey-nav { --gn-x:10px; }
+  .module-detail { margin-top:25px; }
+  .mission-gallery img { height:180px; }
+}
+@media(max-width:900px) {
+  .module-workbench { grid-template-columns:1fr; }
+  .module-figure { max-width:680px; width:100%; margin:auto; }
+  .module-description { display:grid; grid-template-columns:1fr 1fr; gap:24px 36px; }
+  .module-description>.gooey-nav { grid-column:1/-1; justify-self:start; }
+  .module-detail { margin:0; min-height:0; }
+  .module-annotation { margin:0; }
+  .principle-layout { grid-template-columns:1fr; }
+  .principle-steps { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .principle-copy { margin:0; }
+  .roll-result { grid-column:2; margin-top:0; }
+  .principle-tabs { grid-row:span 2; }
+  .aircraft-layout { grid-template-columns:1fr; }
+  .integration-copy { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .integration-copy>.text-link { grid-column:1/-1; }
+  .aircraft-figure { max-width:680px; width:100%; margin:auto; }
+  .mission-gallery img { height:150px; }
+}
+@media(max-width:760px) {
+  .night-environment { margin-bottom:34px; }
+  .night-film-control { right:10px; bottom:10px; }
+  .overview-facts { grid-template-columns:1fr; gap:28px; }
+  .site-overview { padding-top:28px; padding-bottom:64px; }
+  .overview-facts p { margin-top:8px; }
+  .module-workbench { gap:30px; }
+  .module-description { grid-template-columns:1fr; gap:26px; }
+  .module-detail h3 { font-size:var(--lead); }
+  .module-annotation { padding:22px; }
+  .figure-top,.figure-bottom { padding:18px 16px; }
+  .figure-top { font-size:var(--small); }
+  .figure-top>span:last-child { max-width:130px; text-align:right; }
+  .module-figure .anatomy-art { margin:-12px 0 -20px; }
+  .figure-bottom { gap:14px; font-size:var(--small); }
+  .figure-button { padding-inline:14px; }
+  .principle-layout { gap:34px; }
+  .principle-steps { grid-template-columns:1fr; }
+  .principle-tabs { flex-direction:row; gap:5px; }
+  .principle-tabs button { flex:1; justify-content:center; padding:12px 7px; font-size:var(--small); min-height:48px; }
+  .principle-tabs button>span { display:none; }
+  .principle-copy { grid-column:1; }
+  .roll-result { grid-column:1; }
+  .console-header { margin-bottom:12px; }
+  .instrument-controls { margin-inline:0; }
+  .integration-copy { grid-template-columns:1fr; gap:26px; }
+  .aircraft-layout { display:flex; flex-direction:column-reverse; gap:30px; }
+  .sky-controls { padding:0 16px 18px; flex-wrap:wrap; }
+  .mission-note { grid-template-columns:1fr; gap:26px; margin-top:34px; }
+  .mission-gallery { grid-template-columns:1fr 1fr; margin-top:32px; }
+  .mission-gallery figure:first-child { grid-column:1/-1; }
+  .mission-gallery figure:first-child img { height:240px; }
+  .mission-gallery img { height:180px; }
+  .mission-gallery figcaption { padding:14px; }
+  .application-layout { grid-template-columns:1fr; gap:30px; }
+  .contact-section { padding:64px 0; }
+  .contact-panel { width:calc(100% - 40px); gap:32px; }
+  .contact-copy { padding:0; }
+  .contact-form { padding:28px 22px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .star-instrument *, .aircraft-sky { transition:none; }
+}

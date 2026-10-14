@@ -1,0 +1,119 @@
+import assert from 'node:assert/strict';
+import { chromium } from 'playwright';
+import { mkdir, readFile } from 'node:fs/promises';
+
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+await mkdir('test-results', { recursive: true });
+const errors = [];
+try {
+  for (const width of [1440, 768, 390]) {
+    const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('response', response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
+    await page.goto(process.env.TEST_URL || 'http://localhost:5173', { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(1200);
+    assert.equal(await page.locator('h1').count(), 1);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Overflow at ${width}`);
+    const headlines = await page.locator('h1,h2').evaluateAll(elements => elements.map(el => ({ text: el.textContent, lines: el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight) })));
+    for (const heading of headlines) assert.ok(heading.lines < 2.1, `Long heading at ${width}: ${heading.text}`);
+    await page.screenshot({ path: `test-results/hero-${width}.png` });
+
+    if (width <= 900) {
+      await page.getByRole('button', { name: 'Открыть меню', exact: true }).click();
+      assert.equal(await page.getByRole('button', { name: 'Закрыть меню', exact: true }).getAttribute('aria-expanded'), 'true');
+      await page.locator('#mobile-menu a').first().click();
+      assert.equal(await page.locator('#mobile-menu').count(), 0);
+    } else {
+      await page.locator('.gooey-nav__list:not(.gooey-nav__list--active) a').nth(1).click();
+      assert.equal(await page.locator('.desktop-nav .gooey-nav__item[data-active]').getAttribute('data-gooey-index'), '1');
+    }
+
+    await page.locator('#module').scrollIntoViewIfNeeded();
+    await page.locator('.module-figure [data-piece]').first().waitFor();
+    await page.getByRole('button', {name:'Собрать модуль',exact:true}).click();
+    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)<.01);
+    await page.getByRole('button', {name:'Разобрать модуль',exact:true}).click();
+    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)>.99);
+    await page.locator('.module-description .gooey-nav__list:not(.gooey-nav__list--active) button').nth(1).click();
+    assert.match(await page.locator('.module-detail h3').textContent(),/Из света получается кадр/);
+
+    await page.locator('#sky-roll').focus();
+    await page.locator('#sky-roll').press('ArrowLeft');
+    assert.equal(await page.locator('.roll-result output').textContent(),'+13.0°');
+    await page.getByRole('button', {name:'Наблюдение',exact:true}).click();
+    assert.equal(await page.locator('.detected-pattern').count(),0);
+    await page.getByRole('button', {name:'Ориентация',exact:true}).click();
+    assert.equal(await page.locator('.detected-pattern').count(),2);
+
+    await page.locator('#integration').scrollIntoViewIfNeeded();
+    await page.locator('.aircraft-figure [data-piece]').first().waitFor();
+    await page.getByRole('button',{name:'Показать крепление',exact:true}).click();
+    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-drone').dataset.pose)>.99);
+    await page.getByRole('button',{name:'Установить модуль',exact:true}).click();
+    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-drone').dataset.pose)<.01);
+    await page.getByRole('button',{name:'Небо закрыто',exact:true}).click();
+    assert.match(await page.locator('.aircraft-state').textContent(),/недоступен/);
+    await page.getByRole('button',{name:'Приостановить анимацию коптера',exact:true}).click();
+
+    await page.locator('#demo').scrollIntoViewIfNeeded();
+    const frame = page.frameLocator('iframe');
+    await frame.locator('#play').waitFor();
+    await page.locator('.scenario').nth(2).click();
+    assert.equal(Math.floor(Number(await frame.locator('body').getAttribute('data-time'))), 12);
+    await frame.locator('#play').click();
+    await page.waitForTimeout(500);
+    assert.ok(Number(await frame.locator('body').getAttribute('data-time')) > 12, 'Demo play did not advance');
+    await frame.locator('#play').click();
+    await page.screenshot({ path: `test-results/demo-${width}.png` });
+
+    if (await page.locator('.night-film video').count()) {
+      await page.locator('.night-film video').scrollIntoViewIfNeeded();
+      await page.waitForFunction(()=>{
+        const video=document.querySelector('.night-film video');
+        return video.readyState>=2&&!video.paused;
+      });
+      assert.equal(await page.locator('.night-film video').evaluate(el=>el.muted),true);
+      await page.getByRole('button',{name:'Приостановить ночную сцену',exact:true}).click();
+      assert.equal(await page.locator('.night-film video').evaluate(el=>el.paused),true);
+      await page.getByRole('button',{name:'Воспроизвести ночную сцену',exact:true}).click();
+      await page.waitForFunction(()=>!document.querySelector('.night-film video').paused);
+    }
+
+    await page.getByRole('button', { name: 'Когда модуль может работать?' }).click();
+    assert.equal(await page.locator('#answer-1').isVisible(), true);
+    assert.equal(await page.locator('#answer-0').isVisible(), false);
+
+    await page.locator('[name="name"]').fill('Тест Aster');
+    await page.locator('[name="company"]').fill('Промышленный мониторинг');
+    await page.locator('[name="email"]').fill('test@example.com');
+    await page.locator('[name="task"]').fill('Ночной мониторинг при видимом звёздном небе.');
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Скачать бриф', exact: true }).click();
+    const download = await downloadPromise;
+    const body = await readFile(await download.path(), 'utf8');
+    assert.match(body, /Тест Aster/);
+    assert.match(body, /test@example.com/);
+    assert.equal(await page.locator('.contact-form [role="status"]').isVisible(), true);
+    await page.close();
+    console.log(`PASS ${width}px: layout, navigation, module explode/select, star geometry, aircraft mounting/sky/pause, original demo, FAQ, brief`);
+  }
+
+  const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  reduced.on('pageerror', error => errors.push(error.message));
+  await reduced.goto(process.env.TEST_URL || 'http://localhost:5173', { waitUntil: 'networkidle' });
+  await reduced.waitForTimeout(300);
+  assert.equal(await reduced.locator('.hero video').evaluate(el => el.paused), true, 'Video must be paused for reduced motion');
+  if (await reduced.locator('.night-film video').count()) {
+    await reduced.locator('.night-film video').scrollIntoViewIfNeeded();
+    assert.equal(await reduced.locator('.night-film video').evaluate(el=>el.paused),true,'Night scene must remain still for reduced motion');
+  }
+  await reduced.locator('#contact').scrollIntoViewIfNeeded();
+  assert.equal(await reduced.locator('.contact-copy h2').isVisible(), true);
+  assert.equal(await reduced.locator('.contact-copy').evaluate(el => getComputedStyle(el.firstElementChild).opacity), '1');
+  await reduced.close();
+  assert.deepEqual(errors, [], 'Browser errors or failed requests');
+  console.log('PASS reduced motion, no runtime errors, no missing assets');
+} finally {
+  await browser.close();
+}

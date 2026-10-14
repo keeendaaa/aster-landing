@@ -1,0 +1,50 @@
+html { color-scheme: light; }
+body.iso, body.iso[data-theme="light"] {
+  --anatomy-page:#eef4ff; --anatomy-card:#eef4ff; --anatomy-paper:#eef4ff;
+  --anatomy-face:#e1eaff; --anatomy-top:#edf4ff;
+  --anatomy-shade-0:#9aaed3; --anatomy-shade-1:#b0c3e2;
+  --anatomy-shade-2:#c8d7ef; --anatomy-shade-3:#dae5f6;
+  --anatomy-hi:#18386e; --anatomy-mid:#5070a3; --anatomy-lo:#8ca8d3;
+  --anatomy-faint:#c7d7ef; --anatomy-lit:#123fc3;
+  --anatomy-lit-top:#f7fbff; --anatomy-lit-shade:#99b7ed;
+  --anatomy-strong:#0b183b; --anatomy-text:#344d78; --anatomy-muted:#516b97;
+  --anatomy-mono:Arial,Helvetica,sans-serif; --line:#d0dff4;
+  --sand-face:#c3d5ee; --sand-shade:#abc2e3; --sand-top:#dce8f9;
+  --star:#2557bd; --nav:#1555e8; --blade:#4269a6;
+  --control:#123fc3; --control-ink:#fff;
+}
+body.iso[data-theme="dark"] {
+  --anatomy-page:#030625; --anatomy-card:#070e35; --anatomy-paper:#070e35;
+  --anatomy-face:#152453; --anatomy-top:#253e75;
+  --anatomy-shade-0:#0c163b; --anatomy-shade-1:#122047;
+  --anatomy-shade-2:#1b2e5b; --anatomy-shade-3:#243b6b;
+  --anatomy-hi:#b7d1ff; --anatomy-mid:#779bda; --anatomy-lo:#365c99;
+  --anatomy-faint:#1d386b; --anatomy-lit:#e5f6ff;
+  --anatomy-lit-top:#b5d5ff; --anatomy-lit-shade:#5b86cf;
+  --anatomy-strong:#eef6ff; --anatomy-text:#bfd3f4; --anatomy-muted:#91b0e2;
+  --line:#223b70; --sand-face:#183466; --sand-shade:#10234c; --sand-top:#21457e;
+  --star:#c0e5ff; --nav:#dfff00; --blade:#b9d7ff; --control:#dfff00; --control-ink:#07102d;
+}
+main { max-width:none; padding:0; }
+.masthead,.intro,figcaption,footer,.caption-index,.card-top { display:none; }
+.iso-plate { border:0; background:var(--anatomy-card); box-shadow:none; border-radius:0; }
+.iso-stage { padding:0!important; }
+.iso-svg { width:100%!important; max-width:100%!important; max-height:none!important; margin:0!important; }
+.card-bottom { left:24px; right:24px; bottom:20px; font-size:13px; letter-spacing:0; }
+.controls { padding:18px 24px; border:0; }
+.phase-list { padding:12px 24px 20px; gap:12px; border:0; justify-content:space-between; }
+.phase-step { font-size:13px; letter-spacing:0; }
+.phase-step>span { display:none; }
+.timeline-labels { font-size:12px; letter-spacing:0; }
+#clock { font-size:13px; }
+.play-button { width:42px; height:42px; }
+.replay-button { min-width:42px; min-height:42px; }
+@media(max-width:650px) {
+  .card-bottom { left:16px; right:16px; bottom:10px; }
+  .card-bottom [data-readout] { display:none; }
+  .phase-indicator { font-size:12px; }
+  .controls { padding:12px 16px; }
+  .phase-list { justify-content:start; gap:8px 16px; padding:10px 16px 16px; }
+  .phase-step { font-size:12px; min-height:32px; }
+  .timeline-labels span:not(:first-child):not(:last-child) { display:none; }
+}

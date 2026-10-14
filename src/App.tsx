@@ -1,0 +1,158 @@
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { ArrowDown, ArrowUpRight, Check, Download, Menu, Pause, Play, Plus, X } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+import GooeyNav from './components/reactbits/GooeyNav';
+import AnimatedContent from './components/reactbits/AnimatedContent';
+import Magnet from './components/reactbits/Magnet';
+import { ModuleStory, StarPrinciple, AircraftStory } from './components/figures/ProductStory';
+import NightEnvironment from './components/NightEnvironment';
+import '@fontsource-variable/manrope';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
+const navItems = [
+  { label: 'Технология', href: '#technology' },
+  { label: 'В действии', href: '#demo' },
+  { label: 'Применение', href: '#applications' },
+];
+
+function Mark({ className = '' }: { className?: string }) {
+  return <svg className={className} viewBox="0 0 628 439" fill="currentColor" aria-hidden="true"><use href="/aster-mark.svg#aster-mark" /></svg>;
+}
+
+function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  return <AnimatedContent className={className} distance={24} duration={0.85} delay={delay} threshold={0.08}>{children}</AnimatedContent>;
+}
+
+function PrimaryLink({ children, href, dark = false }: { children: ReactNode; href: string; dark?: boolean }) {
+  return <Magnet padding={24} magnetStrength={5} maxOffset={5}><a className={`button ${dark ? 'button-dark' : ''}`} href={href}>{children}<ArrowUpRight size={17} aria-hidden="true" /></a></Magnet>;
+}
+
+const scenarios = [
+  { label: 'Подлёт', time: 2, text: 'Промышленный БПЛА приближается к объекту ночного мониторинга.' },
+  { label: 'Звёздный ориентир', time: 7, text: 'Наблюдение звёздного неба позволяет определить ориентацию аппарата.' },
+  { label: 'Сближение', time: 12, text: 'Бортовая система использует результат вместе с другими навигационными данными.' },
+];
+
+const questions = [
+  ['Aster заменяет GPS?', 'Нет. GPS/ГЛОНАСС дают в том числе информацию о местоположении. Aster определяет ориентацию аппарата по звёздам и дополняет бортовую навигационную систему, а не заменяет все её функции.'],
+  ['Когда модуль может работать?', 'Ночью, при видимом звёздном небе. Облачность, засветка, перекрытие поля зрения и движение аппарата — условия, которые необходимо учитывать при проектировании и проверке интеграции.'],
+  ['Для каких аппаратов он предназначен?', 'Для промышленных БПЛА, выполняющих ночной мониторинг промышленных объектов. Возможность установки на конкретную платформу зависит от компоновки, питания, интерфейсов и требований к навигации.'],
+  ['Что показывает демонстрация?', 'Это интерактивный концептуальный макет ночного полёта, а не запись испытаний Aster. Звёздный датчик отвечает за ориентацию; сближение и посадка на провод показаны как отдельный сценарий с локальным оптическим наведением.'],
+];
+
+type DemoWindow = Window & { starline?: { seek: (time: number) => void; play: () => void; pause: () => void; state: () => { t: number; phase: number } } };
+
+function App() {
+  const root = useRef<HTMLDivElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
+  const iframe = useRef<HTMLIFrameElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const [activeScenario, setActiveScenario] = useState(1);
+  const [openQuestion, setOpenQuestion] = useState<number | null>(0);
+  const [briefReady, setBriefReady] = useState(false);
+
+  useGSAP(() => {
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      const context = gsap.context(() => {
+        gsap.from('.hero-enter', { y: 22, opacity: 0, stagger: 0.11, duration: 1, ease: 'power3.out', clearProps: 'all' });
+        gsap.to('.hero-media', { y: 65, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 } });
+        gsap.from('.footer-wordmark', { yPercent: 28, ease: 'none', scrollTrigger: { trigger: '.footer', start: 'top bottom', end: 'bottom bottom', scrub: 1 } });
+      }, root);
+      return () => context.revert();
+    });
+    return () => media.revert();
+  }, { scope: root });
+
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const applyMotionPreference = () => {
+      if (reduced.matches) { video.current?.pause(); setVideoPlaying(false); }
+    };
+    applyMotionPreference();
+    reduced.addEventListener('change', applyMotionPreference);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) video.current?.pause();
+      else if (!reduced.matches && videoPlaying) void video.current?.play().catch(() => setVideoPlaying(false));
+    });
+    if (video.current) observer.observe(video.current);
+    return () => { observer.disconnect(); reduced.removeEventListener('change', applyMotionPreference); };
+  }, [videoPlaying]);
+
+  const selectScenario = (index: number) => {
+    setActiveScenario(index);
+    (iframe.current?.contentWindow as DemoWindow | null)?.starline?.seek(scenarios[index].time);
+  };
+
+  const createBrief = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const content = `ASTER — запрос на интеграцию\n\nИмя: ${data.get('name')}\nКомпания: ${data.get('company')}\nEmail: ${data.get('email')}\nЗадача: ${data.get('task')}\n\nПродукт: модуль звёздного ориентирования для промышленного БПЛА.\nУсловия работы: ночной мониторинг при видимом звёздном небе.\nДля обсуждения: платформа, компоновка, питание, интерфейсы и требования к ориентации.\n`;
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url; link.download = 'Aster-интеграция.txt'; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setBriefReady(true);
+  };
+
+  return <div ref={root}>
+    <a className="skip-link" href="#technology">К содержимому</a>
+    <section className="hero" id="top" aria-label="Aster — звёздное ориентирование">
+      <div className="hero-media"><video ref={video} autoPlay muted loop playsInline preload="auto" poster="/media/sky-poster.webp" aria-hidden="true"><source src="/media/aster-sky.mp4" type="video/mp4" /></video></div>
+      <header className="header shell">
+        <a className="wordmark" href="#top" aria-label="Aster — на главную"><Mark />aster</a>
+        <div className="desktop-nav"><GooeyNav items={navItems} frame={false} color="#dfff00" activeTextColor="#080d26" particleCount={9} spread={22} animationTime={450} size="sm" /></div>
+        <a className="header-contact" href="#contact">Связаться <ArrowUpRight size={15} aria-hidden="true" /></a>
+        <button className="menu-button" aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button>
+      </header>
+      {menuOpen && <nav id="mobile-menu" className="mobile-nav">{[...navItems, { label: 'Связаться', href: '#contact' }].map(item => <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowUpRight size={18} /></a>)}</nav>}
+      <div className="hero-copy">
+        <h1 className="hero-enter">Звёзды задают<br />ориентацию</h1>
+        <p className="hero-enter">Компактный модуль звёздного ориентирования<br className="desktop-break" /> для промышленных БПЛА. Когда спутникового сигнала нет.</p>
+        <div className="hero-enter hero-action"><PrimaryLink href="#contact">Обсудить интеграцию</PrimaryLink></div>
+      </div>
+      <div className="hero-bottom shell"><a href="#technology" className="explore-link"><ArrowDown size={17} /> Прокрутите вниз</a><button className="video-toggle" onClick={() => { if (!video.current) return; if (video.current.paused) { void video.current.play().then(() => setVideoPlaying(true)).catch(() => setVideoPlaying(false)); } else { video.current.pause(); setVideoPlaying(false); } }} aria-label={videoPlaying ? 'Приостановить фоновое видео' : 'Воспроизвести фоновое видео'}>{videoPlaying ? <Pause size={14} /> : <Play size={14} />}<span>{videoPlaying ? 'Пауза' : 'Воспроизвести'}</span></button></div>
+    </section>
+
+    <main>
+      <section id="technology" className="site-overview shell section-space">
+        <div className="section-heading"><Reveal><h2>Ориентир вне<br />спутниковой сети</h2></Reveal><Reveal delay={0.08}><p>Когда GPS/ГЛОНАСС недоступны, у навигационной системы остаётся задача: понимать ориентацию аппарата. Aster добавляет внешний оптический ориентир — видимое звёздное небо.</p></Reveal></div>
+        <div className="overview-facts"><Reveal><h3>Что определяет</h3><p>Ориентацию датчика относительно звёздного неба, а не абсолютные координаты аппарата.</p></Reveal><Reveal delay={.08}><h3>Как используется</h3><p>Как дополнительный источник данных для бортовой навигационной системы промышленного БПЛА.</p></Reveal><Reveal delay={.16}><h3>В каких условиях</h3><p>Ночью, при видимых звёздах и открытом поле зрения. Не всепогодная замена спутниковой навигации.</p></Reveal></div>
+      </section>
+
+      <ModuleStory />
+      <StarPrinciple />
+      <AircraftStory />
+
+      <section id="demo" className="demo-section mission-section section-space">
+        <div className="shell"><div className="section-heading"><Reveal><h2>Одна ночь.<br />Несколько систем.</h2></Reveal><Reveal delay={0.08}><p>Теперь соберём всё в один сценарий. В макете звёздное ориентирование появляется при подлёте к объекту, а локальное оптическое наведение решает отдельную задачу сближения.</p></Reveal></div>
+          <div className="demo-layout">
+            <div className="scenario-index" role="group" aria-label="Выберите момент демонстрации">{scenarios.map((scenario, index) => <button key={scenario.label} className={activeScenario === index ? 'scenario active' : 'scenario'} aria-pressed={activeScenario === index} onClick={() => selectScenario(index)}><span className="scenario-title">{scenario.label}<ArrowUpRight size={20} /></span><span className="scenario-copy">{scenario.text}</span></button>)}<a href="/demo/index.html" target="_blank" rel="noreferrer" className="standalone-link">Открыть отдельно <ArrowUpRight size={16} /></a></div>
+            <div className="demo-frame" data-ui="concept-demo"><iframe ref={iframe} src="/demo/index.html" title="Aster: интерактивный концептуальный макет ночного полёта" loading="lazy" onLoad={() => { const frame=iframe.current?.contentWindow as DemoWindow|null; if(frame?.document.body) frame.document.body.dataset.theme='dark'; frame?.starline?.seek(7); }} /></div>
+          </div>
+          <p className="demo-caption">Концептуальная визуализация, не запись испытаний. Финальное сближение и посадка подразумевают локальное оптическое наведение. Звёзды и масштаб условные.</p>
+          <div className="mission-note"><Reveal><h3>Звёзды — для ориентации</h3><p>Датчик связывает направление своего взгляда со звёздным небом. Его результат используется в составе общей навигационной системы.</p></Reveal><Reveal delay={.08}><h3>Локальное наведение — для сближения</h3><p>Определение расстояния до объекта, обход препятствий и посадка не следуют из одного звёздного измерения. Для них нужны отдельные средства.</p></Reveal></div>
+          <div className="mission-gallery"><figure><img src="/media/night-scene.webp" width="1200" height="1000" loading="lazy" alt="Концептуальный макет полёта между опорами промышленной инфраструктуры"/><figcaption>Объект наблюдения: условный линейный участок</figcaption></figure><figure><img src="/media/match.webp" width="1100" height="760" loading="lazy" alt="Звёздный рисунок и направление датчика на интерактивном макете"/><figcaption>Внешний ориентир: звёздный рисунок</figcaption></figure><figure><img src="/media/orientation.webp" width="800" height="760" loading="lazy" alt="Фрагмент коптера в концептуальном сценарии сближения"/><figcaption>Локальная задача: положение у объекта</figcaption></figure></div>
+        </div>
+      </section>
+
+      <section id="applications" className="applications shell section-space">
+        <Reveal><h2>Для ночных задач</h2></Reveal>
+        <Reveal><NightEnvironment /></Reveal>
+        <div className="application-layout"><Reveal className="application-image"><img src="/figures/module-detail.webp" alt="Концептуальная компоновка Aster: отдельные оптический и электронный узлы" width="1100" height="900" loading="lazy" /><span>Компоновка под вашу платформу</span></Reveal><div className="application-content"><Reveal><p className="large-statement">Для промышленных БПЛА, которым нужен дополнительный источник ориентации при ночном мониторинге.</p></Reveal><div className="use-case-list"><Reveal delay={.08}><h3>Линейные объекты</h3><p>Возможный контекст: протяжённые участки промышленной инфраструктуры под открытым небом.</p></Reveal><Reveal delay={.16}><h3>Промышленные площадки</h3><p>При выборе сценария важно заранее оценить обзор неба, местную засветку и условия полёта.</p></Reveal><Reveal delay={.2}><h3>Проверка интеграции</h3><p>Начать стоит с требований к ориентации, компоновки аппарата и способов обмена с бортовой системой. Затем — проверять решение в заданных условиях.</p></Reveal></div><Reveal delay={.24}><a className="text-link" href="#contact">Рассмотреть вашу платформу <ArrowUpRight size={18} /></a></Reveal></div></div>
+      </section>
+
+      <section className="faq-section shell section-space" id="questions"><Reveal><h2>По существу</h2></Reveal><div className="faq-list">{questions.map(([question, answer], index) => <Reveal key={question} delay={index * 0.04}><article className={`faq-item ${openQuestion === index ? 'is-open' : ''}`}><h3><button aria-expanded={openQuestion === index} aria-controls={`answer-${index}`} id={`question-${index}`} onClick={() => setOpenQuestion(openQuestion === index ? null : index)}>{question}<Plus size={23} aria-hidden="true" /></button></h3><div id={`answer-${index}`} role="region" aria-labelledby={`question-${index}`} hidden={openQuestion !== index}><p>{answer}</p></div></article></Reveal>)}</div></section>
+
+      <section id="contact" className="contact-section shell section-space"><div className="contact-panel"><div className="contact-copy"><Reveal><Mark className="contact-mark" /><h2>Ваш борт.<br />Наш ориентир.</h2><p>Расскажите о платформе и задаче. Подготовим краткий бриф для обсуждения интеграции Aster.</p></Reveal></div><form onSubmit={createBrief} className="contact-form"><div className="form-row"><label>Ваше имя<input name="name" autoComplete="name" placeholder="Александр" required maxLength={100} /></label><label>Компания<input name="company" autoComplete="organization" placeholder="Название компании" required maxLength={150} /></label></div><label>Рабочая почта<input name="email" type="email" autoComplete="email" placeholder="you@company.ru" required maxLength={200} /></label><label>О вашей задаче<textarea name="task" placeholder="Платформа, условия полёта, требования к навигации…" rows={3} required maxLength={2500} /></label><button type="submit" className="button button-dark">{briefReady ? 'Скачать ещё раз' : 'Скачать бриф'}{briefReady ? <Check size={17} /> : <Download size={17} />}</button><p className="form-note" role="status">{briefReady ? 'Бриф подготовлен. Файл сохранён на вашем устройстве. Данные никуда не отправлены.' : 'Бриф сохранится текстовым файлом. Данные остаются на вашем устройстве.'}</p></form></div></section>
+    </main>
+
+    <footer className="footer"><div className="shell"><div className="footer-top"><p>Точка опоры —<br />звёздное небо.</p><div><a href="#technology">Технология</a><a href="#demo">Демонстрация</a><a href="#contact">Интеграция</a></div><a href="#top" className="back-top" aria-label="В начало страницы"><ArrowUpRight size={24} /></a></div><div className="footer-logo-wrap"><div className="footer-wordmark"><Mark />aster</div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Aster</span><span>Звёздное ориентирование для БПЛА</span><span>Концепция продукта</span></div></div></footer>
+  </div>;
+}
+
+export default App;
