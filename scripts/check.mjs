@@ -81,8 +81,24 @@ try {
     }
 
     await page.getByRole('button', { name: 'Когда модуль может работать?' }).click();
+    await page.locator('#answer-1').waitFor({state:'visible'});
     assert.equal(await page.locator('#answer-1').isVisible(), true);
+    await page.locator('#answer-0').waitFor({state:'hidden'});
     assert.equal(await page.locator('#answer-0').isVisible(), false);
+    assert.equal(await page.locator('#questions [data-radix-collection-item]').count(),5);
+    await page.locator('#question-1').focus();
+    await page.locator('#question-1').press('ArrowDown');
+    assert.equal(await page.locator('#question-2').evaluate(el=>el===document.activeElement),true);
+    await page.locator('#question-2').press('Enter');
+    await page.locator('#answer-1').waitFor({state:'hidden'});
+    await page.locator('#answer-2').waitFor({state:'visible'});
+    assert.equal(await page.locator('#answer-2').isVisible(),true);
+    await page.locator('#question-2').press('Enter');
+    await page.locator('#answer-2').waitFor({state:'hidden'});
+    for(const href of await page.locator('#questions a').evaluateAll(links=>links.map(link=>link.getAttribute('href')))) {
+      assert.ok(href.startsWith('#')&&href.length>1,'FAQ links must have real destinations');
+      assert.equal(await page.locator(href).count(),1,`Missing FAQ link target: ${href}`);
+    }
 
     await page.locator('[name="name"]').fill('Тест Aster');
     await page.locator('[name="company"]').fill('Промышленный мониторинг');

@@ -122,15 +122,6 @@ img { display:block; width:100%; object-fit:cover; }
 .conditions p { color:var(--muted); }
 .text-link { display:inline-flex; align-items:center; gap:16px; font-size:var(--body-size); color:var(--blue); font-weight:550; padding-block:8px; }
 .text-link:hover svg { transform:translate(2px,-2px); }
-.faq-section { display:grid; grid-template-columns:1fr 1.3fr; gap:100px; padding-top:40px; }
-.faq-list { display:flex; flex-direction:column; gap:12px; }
-.faq-item { background:var(--field); padding:0 28px; }
-.faq-item.is-open { background:var(--ice); }
-.faq-item h3 { font:inherit; }
-.faq-item h3 button { border:0; padding:26px 0; background:none; text-align:left; display:flex; justify-content:space-between; gap:24px; align-items:center; width:100%; font-size:var(--body-size); font-weight:550; }
-.faq-item button svg { flex:none; transition:transform .25s var(--ease); }
-.faq-item.is-open button svg { transform:rotate(45deg); }
-.faq-item p { color:var(--muted); padding-bottom:28px; }
 .contact-section { padding-top:30px; }
 .contact-panel { display:grid; grid-template-columns:1fr 1fr; background:var(--ice); }
 .contact-copy { padding:64px 56px; }
@@ -167,7 +158,6 @@ img { display:block; width:100%; object-fit:cover; }
   .demo-frame iframe { height:600px; }
   .contact-copy { padding:48px 32px; }
   .contact-form { padding:48px 28px; }
-  .faq-section { gap:50px; }
   .application-image { height:510px; }
 }
 @media(max-width:900px) {
@@ -220,7 +210,6 @@ img { display:block; width:100%; object-fit:cover; }
   .application-image { height:440px; }
   .application-content { max-width:550px; }
   .conditions { padding-top:0; }
-  .faq-section { grid-template-columns:1fr; gap:30px; padding-top:0; }
   .contact-panel { grid-template-columns:1fr; }
   .contact-copy { padding:36px 28px; }
   .contact-copy h2 br { display:block; }
@@ -253,7 +242,6 @@ img { display:block; width:100%; object-fit:cover; }
   .scenario { padding:14px 8px; }
   .scenario-title { font-size:var(--small); }
   .application-image { height:360px; }
-  .faq-item { padding-inline:20px; }
   .form-row { grid-template-columns:1fr; gap:20px; }
   .contact-copy,.contact-form { padding:28px 20px; }
   .footer-top>div { gap:12px; }

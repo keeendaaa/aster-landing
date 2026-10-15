@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowDown, ArrowUpRight, Check, Download, Menu, Pause, Play, Plus, X } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Check, Download, Menu, Pause, Play, X } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -8,6 +8,7 @@ import AnimatedContent from './components/reactbits/AnimatedContent';
 import Magnet from './components/reactbits/Magnet';
 import { ModuleStory, StarPrinciple, AircraftStory } from './components/figures/ProductStory';
 import NightEnvironment from './components/NightEnvironment';
+import FAQs from '@/components/ui/faqs-component';
 import '@fontsource-variable/manrope';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -36,13 +37,6 @@ const scenarios = [
   { label: 'Сближение', time: 12, text: 'Бортовая система использует результат вместе с другими навигационными данными.' },
 ];
 
-const questions = [
-  ['Aster заменяет GPS?', 'Нет. GPS/ГЛОНАСС дают в том числе информацию о местоположении. Aster определяет ориентацию аппарата по звёздам и дополняет бортовую навигационную систему, а не заменяет все её функции.'],
-  ['Когда модуль может работать?', 'Ночью, при видимом звёздном небе. Облачность, засветка, перекрытие поля зрения и движение аппарата — условия, которые необходимо учитывать при проектировании и проверке интеграции.'],
-  ['Для каких аппаратов он предназначен?', 'Для промышленных БПЛА, выполняющих ночной мониторинг промышленных объектов. Возможность установки на конкретную платформу зависит от компоновки, питания, интерфейсов и требований к навигации.'],
-  ['Что показывает демонстрация?', 'Это интерактивный концептуальный макет ночного полёта, а не запись испытаний Aster. Звёздный датчик отвечает за ориентацию; сближение и посадка на провод показаны как отдельный сценарий с локальным оптическим наведением.'],
-];
-
 type DemoWindow = Window & { starline?: { seek: (time: number) => void; play: () => void; pause: () => void; state: () => { t: number; phase: number } } };
 
 function App() {
@@ -52,7 +46,6 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [activeScenario, setActiveScenario] = useState(1);
-  const [openQuestion, setOpenQuestion] = useState<number | null>(0);
   const [briefReady, setBriefReady] = useState(false);
 
   useGSAP(() => {
@@ -146,7 +139,7 @@ function App() {
         <div className="application-layout"><Reveal className="application-image"><img src="/figures/module-detail.webp" alt="Концептуальная компоновка Aster: отдельные оптический и электронный узлы" width="1100" height="900" loading="lazy" /><span>Компоновка под вашу платформу</span></Reveal><div className="application-content"><Reveal><p className="large-statement">Для промышленных БПЛА, которым нужен дополнительный источник ориентации при ночном мониторинге.</p></Reveal><div className="use-case-list"><Reveal delay={.08}><h3>Линейные объекты</h3><p>Возможный контекст: протяжённые участки промышленной инфраструктуры под открытым небом.</p></Reveal><Reveal delay={.16}><h3>Промышленные площадки</h3><p>При выборе сценария важно заранее оценить обзор неба, местную засветку и условия полёта.</p></Reveal><Reveal delay={.2}><h3>Проверка интеграции</h3><p>Начать стоит с требований к ориентации, компоновки аппарата и способов обмена с бортовой системой. Затем — проверять решение в заданных условиях.</p></Reveal></div><Reveal delay={.24}><a className="text-link" href="#contact">Рассмотреть вашу платформу <ArrowUpRight size={18} /></a></Reveal></div></div>
       </section>
 
-      <section className="faq-section shell section-space" id="questions"><Reveal><h2>По существу</h2></Reveal><div className="faq-list">{questions.map(([question, answer], index) => <Reveal key={question} delay={index * 0.04}><article className={`faq-item ${openQuestion === index ? 'is-open' : ''}`}><h3><button aria-expanded={openQuestion === index} aria-controls={`answer-${index}`} id={`question-${index}`} onClick={() => setOpenQuestion(openQuestion === index ? null : index)}>{question}<Plus size={23} aria-hidden="true" /></button></h3><div id={`answer-${index}`} role="region" aria-labelledby={`question-${index}`} hidden={openQuestion !== index}><p>{answer}</p></div></article></Reveal>)}</div></section>
+      <FAQs />
 
       <section id="contact" className="contact-section shell section-space"><div className="contact-panel"><div className="contact-copy"><Reveal><Mark className="contact-mark" /><h2>Ваш борт.<br />Наш ориентир.</h2><p>Расскажите о платформе и задаче. Подготовим краткий бриф для обсуждения интеграции Aster.</p></Reveal></div><form onSubmit={createBrief} className="contact-form"><div className="form-row"><label>Ваше имя<input name="name" autoComplete="name" placeholder="Александр" required maxLength={100} /></label><label>Компания<input name="company" autoComplete="organization" placeholder="Название компании" required maxLength={150} /></label></div><label>Рабочая почта<input name="email" type="email" autoComplete="email" placeholder="you@company.ru" required maxLength={200} /></label><label>О вашей задаче<textarea name="task" placeholder="Платформа, условия полёта, требования к навигации…" rows={3} required maxLength={2500} /></label><button type="submit" className="button button-dark">{briefReady ? 'Скачать ещё раз' : 'Скачать бриф'}{briefReady ? <Check size={17} /> : <Download size={17} />}</button><p className="form-note" role="status">{briefReady ? 'Бриф подготовлен. Файл сохранён на вашем устройстве. Данные никуда не отправлены.' : 'Бриф сохранится текстовым файлом. Данные остаются на вашем устройстве.'}</p></form></div></section>
     </main>

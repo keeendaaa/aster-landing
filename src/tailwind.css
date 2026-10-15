@@ -1,0 +1,47 @@
+/* Keep Aster's existing reset. Deliberately omit Tailwind Preflight so adding
+   one shadcn block does not restyle the hero, Anatomy scenes or native forms.
+   Utilities are unlayered to compose with the project's existing vanilla CSS. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css';
+@import 'tw-animate-css';
+
+@theme inline {
+  --font-sans: var(--body);
+  --font-display: var(--display);
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-card: var(--paper);
+  --color-card-foreground: var(--ink);
+  --color-primary: var(--blue);
+  --color-primary-foreground: var(--paper);
+  --color-secondary: var(--ice);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--field);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--ice);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: #b73535;
+  --color-destructive-foreground: var(--paper);
+  --color-border: #d4def1;
+  --color-input: #d4def1;
+  --color-ring: var(--blue);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+.aster-faq h3 { font-family: var(--body); font-size: var(--body-size); font-weight: 500; letter-spacing: 0; }
+.aster-faq [data-radix-collection-item] { line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aster-faq [data-state] { animation: none !important; }
+}

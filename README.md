@@ -34,6 +34,27 @@ npm run preview
 
 ## Файлы
 
+### shadcn / Tailwind / FAQ
+
+TypeScript уже настроен. Добавлены Tailwind CSS 4 с официальным Vite-плагином и shadcn-совместимая структура:
+
+- `src/components/ui/` — общие UI-компоненты (`@/components/ui` через алиас `@ → src`). Это эквивалент `/components/ui` для проекта с исходниками в `src`; отдельная папка в корне создала бы второй, несовместимый с алиасами путь.
+- `src/components/ui/faqs-component.tsx` — двухколоночный FAQ с пятью вопросами Aster и встроенными ссылками на разделы страницы. Основа — код, предоставленный пользователем; это не результат установки платного реестра.
+- `src/components/ui/demo.tsx` — демонстрационный импорт того же FAQ без дублирования данных.
+- `src/components/ui/accordion.tsx`, `button.tsx` — предоставленные shadcn/Radix-примитивы.
+- `src/lib/utils.ts` — `cn` на основе `clsx` и `tailwind-merge`.
+- `src/tailwind.css` — Tailwind-утилиты, анимации аккордеона и привязка shadcn-цветов к токенам Aster. Preflight намеренно не подключён: исходные стили сайта не сбрасываются.
+- `components.json` — пути и авторизованные реестры React Bits Starter/Pro. Для платной CLI-установки нужен `REACTBITS_LICENSE_KEY` в локальном окружении или `.env.local`; ключ не должен иметь префикс `VITE_` и не должен попадать в Git.
+
+Проект остаётся на Vite: `next/link` заменён обычными якорными ссылками с реальными целями. Устанавливать Next.js только ради них не нужно. FAQ не требует изображений, новых глобальных провайдеров или внешнего хранилища состояния; одиночное раскрытие и клавиатуру обрабатывает Radix Accordion.
+
+Для установки этих зависимостей в новой копии достаточно `npm install`. Эквивалент первоначальной настройки Tailwind:
+
+```sh
+npm install -D tailwindcss @tailwindcss/vite
+npm install @radix-ui/react-slot @radix-ui/react-accordion class-variance-authority clsx tailwind-merge tw-animate-css
+```
+
 - `src/App.tsx` — содержание и интерактивность.
 - `src/styles.css` — оформление и адаптивная композиция.
 - `src/experience.css` — единый визуальный язык новых секций, инструментов и Anatomy-сцен.
