@@ -72,7 +72,7 @@
 .roll-result { margin-top:30px; display:flex; flex-direction:column; gap:10px; }
 .roll-result>span { font-size:var(--small); color:var(--night-muted); }
 .roll-result output { font-family:var(--display); font-size:var(--heading); letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1.05; }
-.figure-disclaimer { color:var(--muted); font-size:var(--small); margin-top:30px; max-width:850px; }
+.figure-disclaimer { color:var(--muted); font-size:var(--small); margin-top:30px; max-width:60ch; }
 .principle-story .figure-disclaimer { color:var(--night-muted); }
 .aircraft-layout { display:grid; grid-template-columns:.8fr 1.2fr; gap:60px; align-items:center; }
 .integration-copy { display:flex; flex-direction:column; gap:30px; }
@@ -85,12 +85,7 @@
 .aircraft-pause:hover { color:var(--accent); }
 .aircraft-sky { position:absolute; top:70px; left:0; right:0; height:35%; transition:opacity .5s; }
 .aircraft-sky i { position:absolute; width:2px; height:2px; background:#cce5ff; border-radius:50%; }
-.sky-closed .aircraft-sky { opacity:0; }
-.sky-closed .aircraft-state i { background:var(--night-muted); }
 .rotor-blades path { fill:#b9d7ff; stroke:#e2efff; stroke-width:.6; }
-.sky-controls { display:flex; gap:8px; padding:0 24px 24px; }
-.sky-controls button { background:var(--night-surface); color:var(--paper); border:0; border-radius:100px; padding:12px 16px; min-height:44px; font-size:var(--small); }
-.sky-controls button[aria-pressed=true] { background:var(--accent); color:var(--night); }
 .mission-section { background:var(--night); color:var(--paper); }
 .mission-section .section-heading p { color:var(--night-muted); }
 .mission-section .demo-frame { background:var(--instrument); }

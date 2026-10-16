@@ -9,6 +9,10 @@ type FigureArt = {P:Projection;rise:number[];depthZ:number;count:number;items:{n
 
 export function AnatomyArt({kind,expanded=false,selected='',detached=false,flying=false}:Props) {
   const ref=useRef<SVGSVGElement>(null);
+  const pose=useRef({value:0});
+  const current=useRef({expanded,selected,detached});
+  current.current={expanded,selected,detached};
+  const updatePose=useRef<(()=>void)|null>(null);
   const [art,setArt]=useState<FigureArt|null>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -24,33 +28,46 @@ export function AnatomyArt({kind,expanded=false,selected='',detached=false,flyin
     observer.observe(ref.current!);
     return()=>{abort.abort();observer.disconnect();};
   },[kind]);
-  useGSAP(()=>{
+  useGSAP((_,contextSafe)=>{
     if(!art)return;
-    const media=gsap.matchMedia();
-    media.add({reduced:'(prefers-reduced-motion: reduce)',normal:'(prefers-reduced-motion: no-preference)'},context=>{
-      const groups=Array.from(ref.current!.querySelectorAll<SVGGElement>('[data-piece]'));
-      const pose={value:Number(ref.current!.dataset.pose||0)};
+    const media=matchMedia('(prefers-reduced-motion: reduce)');
+    const groups=Array.from(ref.current!.querySelectorAll<SVGGElement>('[data-piece]'));
+    const layer=ref.current!.querySelector('[data-assembly]')!;
+    let targetPose:number|undefined;
+    const update=contextSafe!(()=>{
+      const {expanded,selected,detached}=current.current;
       const target=kind==='module'?Number(expanded):Number(detached);
       const draw=()=>{
-        ref.current!.dataset.pose=String(pose.value);
+        ref.current!.dataset.pose=String(pose.current.value);
         for(const element of groups) {
           const lift=kind==='module'?Number(element.dataset.lift):(element.dataset.piece==='airframe'||element.dataset.piece==='mount'?0:66);
-          element.setAttribute('transform',`translate(${art.rise[0]*lift*pose.value} ${art.rise[1]*lift*pose.value})`);
-          element.dataset.depth=String(Number(element.dataset.key)+lift*pose.value*art.depthZ);
+          element.setAttribute('transform',`translate(${art.rise[0]*lift*pose.current.value} ${art.rise[1]*lift*pose.current.value})`);
+          element.dataset.depth=String(Number(element.dataset.key)+lift*pose.current.value*art.depthZ);
         }
         groups.sort((a,b)=>Number(a.dataset.depth)-Number(b.dataset.depth));
-        const layer=ref.current!.querySelector('[data-assembly]')!;
-        for(const group of groups) layer.appendChild(group);
+        groups.forEach((group,index)=>{if(layer.children[index]!==group)layer.insertBefore(group,layer.children[index]||null);});
       };
-      gsap.to(pose,{value:target,duration:context.conditions?.reduced?0:1.2,ease:'power2.inOut',onUpdate:draw});
+      // Keep the live pose across prop changes. Reverting this tween on every
+      // toggle used to reset it to zero before the reverse animation started.
+      // Highlight-only updates must not restart an in-flight assembly tween.
+      // A live reduced-motion change still settles the current target at once.
+      if(targetPose!==target||(media.matches&&pose.current.value!==target)) {
+        targetPose=target;
+        gsap.to(pose.current,{value:target,duration:media.matches?0:1.2,ease:'power2.inOut',overwrite:true,onUpdate:draw});
+      }
       const lowlight=selected && kind==='module';
       for(const group of groups) {
         const dimmed=lowlight&&group.dataset.piece!==selected&&group.dataset.piece!=='body';
-        gsap.to(group,{opacity:dimmed?0.38:1,duration:context.conditions?.reduced?0:.35});
+        gsap.to(group,{opacity:dimmed?0.38:1,duration:media.matches?0:.35,overwrite:true});
       }
     });
-    return ()=>media.revert();
-  },{scope:ref,dependencies:[art,expanded,selected,detached],revertOnUpdate:true});
+    updatePose.current=update;
+    update();
+    media.addEventListener('change',update);
+    return ()=>{updatePose.current=null;media.removeEventListener('change',update);};
+  },{scope:ref,dependencies:[art,kind],revertOnUpdate:true});
+
+  useEffect(()=>{updatePose.current?.();},[expanded,selected,detached]);
 
   useGSAP(()=>{
     if(kind!=='drone'||!art) return;
@@ -75,7 +92,7 @@ export function AnatomyArt({kind,expanded=false,selected='',detached=false,flyin
     return ()=>{observe.disconnect();gsap.ticker.remove(tick);reduced.removeEventListener('change',onPreference);};
   },{scope:ref,dependencies:[art,kind,flying],revertOnUpdate:true});
 
-  return <svg ref={ref} className={`iso-svg anatomy-art anatomy-${kind}`} viewBox="0 0 900 680" role="img" aria-label={kind==='module'?'Концептуальная компоновка звёздного датчика: корпус, электроника, матрица и оптика':'Концептуальный промышленный квадрокоптер с модулем Aster на верхней площадке'}>
+  return <svg ref={ref} className={`iso-svg anatomy-art anatomy-${kind}`} viewBox="0 0 900 680" role="img" aria-label={kind==='module'?'Концептуальная компоновка звёздного датчика: корпус, электроника, матрица и оптика':'Пример гражданского БАС с модулем Aster на верхней площадке'}>
     <ellipse className="anatomy-ground" cx="450" cy="571" rx={kind==='module'?225:300} ry="42" />
     {!art&&<text x="450" y="340" textAnchor="middle" fill="currentColor" fontSize="18">{failed?'Схема временно недоступна':'Загрузка схемы'}</text>}
     <g data-assembly>{art?.items.map(item=><g key={item.name} data-piece={item.part} data-lift={item.lift} data-key={item.key} dangerouslySetInnerHTML={{__html:item.svg}} />)}</g>

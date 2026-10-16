@@ -26,7 +26,9 @@ body.iso[data-theme="dark"] {
   --star:#c0e5ff; --nav:#dfff00; --blade:#b9d7ff; --control:#dfff00; --control-ink:#07102d;
 }
 main { max-width:none; padding:0; }
-.masthead,.intro,figcaption,footer,.caption-index,.card-top { display:none; }
+.masthead,.intro,footer,.caption-index,.card-top { display:none; }
+body[data-embedded="true"] figcaption { display:none; }
+figcaption { padding:20px 24px; border:0; font-size:14px; line-height:1.6; }
 .iso-plate { border:0; background:var(--anatomy-card); box-shadow:none; border-radius:0; }
 .iso-stage { padding:0!important; }
 .iso-svg { width:100%!important; max-width:100%!important; max-height:none!important; margin:0!important; }

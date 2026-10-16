@@ -33,9 +33,9 @@ function PrimaryLink({ children, href, dark = false }: { children: ReactNode; hr
 }
 
 const scenarios = [
-  { label: 'Подлёт', time: 2, text: 'Промышленный БПЛА приближается к объекту ночного мониторинга.' },
+  { label: 'Подлёт', time: 2, text: 'На маршруте Aster связывает ориентацию аппарата со звёздным небом.' },
   { label: 'Звёздный ориентир', time: 7, text: 'Наблюдение звёздного неба позволяет определить ориентацию аппарата.' },
-  { label: 'Сближение', time: 12, text: 'Бортовая система использует результат вместе с другими навигационными данными.' },
+  { label: 'Сближение', time: 12, text: 'Звёздная связь убрана: точное позиционирование у объекта требует отдельных средств.' },
 ];
 
 type DemoWindow = Window & { starline?: { seek: (time: number) => void; play: () => void; pause: () => void; state: () => { t: number; phase: number } } };
@@ -95,7 +95,7 @@ function App() {
       {menuOpen && <nav id="mobile-menu" className="mobile-nav">{[...navItems, { label: 'Связаться', href: '#contact' }].map(item => <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}<ArrowUpRight size={18} /></a>)}</nav>}
       <div className="hero-copy">
         <h1 className="hero-enter">Звёзды задают<br />ориентацию</h1>
-        <p className="hero-enter">Компактный модуль звёздного ориентирования<br className="desktop-break" /> для промышленных БПЛА. Когда спутникового сигнала нет.</p>
+        <p className="hero-enter">Модуль абсолютной коррекции навигации<br className="desktop-break" /> для гражданских платформ. Дополнение к GPS.</p>
         <div className="hero-enter hero-action"><PrimaryLink href="#contact">Обсудить интеграцию</PrimaryLink></div>
       </div>
       <div className="hero-bottom shell"><a href="#technology" className="explore-link"><ArrowDown size={17} /> Прокрутите вниз</a><button className="video-toggle" onClick={() => { if (!video.current) return; if (video.current.paused) { void video.current.play().then(() => setVideoPlaying(true)).catch(() => setVideoPlaying(false)); } else { video.current.pause(); setVideoPlaying(false); } }} aria-label={videoPlaying ? 'Приостановить фоновое видео' : 'Воспроизвести фоновое видео'}>{videoPlaying ? <Pause size={14} /> : <Play size={14} />}<span>{videoPlaying ? 'Пауза' : 'Воспроизвести'}</span></button></div>
@@ -103,8 +103,8 @@ function App() {
 
     <main>
       <section id="technology" className="site-overview shell section-space">
-        <div className="section-heading"><Reveal><h2>Ориентир вне<br />спутниковой сети</h2></Reveal><Reveal delay={0.08}><p>Когда GPS/ГЛОНАСС недоступны, у навигационной системы остаётся задача: понимать ориентацию аппарата. Aster добавляет внешний оптический ориентир — видимое звёздное небо.</p></Reveal></div>
-        <div className="overview-facts"><Reveal><h3>Что определяет</h3><p>Ориентацию датчика относительно звёздного неба, а не абсолютные координаты аппарата.</p></Reveal><Reveal delay={.08}><h3>Как используется</h3><p>Как дополнительный источник данных для бортовой навигационной системы промышленного БПЛА.</p></Reveal><Reveal delay={.16}><h3>В каких условиях</h3><p>Ночью, при видимых звёздах и открытом поле зрения. Не всепогодная замена спутниковой навигации.</p></Reveal></div>
+        <div className="section-heading"><Reveal><h2>Небо — опора<br />для навигации</h2></Reveal><Reveal delay={0.08}><p>Aster — модуль абсолютной коррекции навигации. Оптические измерения дают внешний ориентир для бортовой системы, в том числе при недоступности GPS/ГЛОНАСС. Это дополнение к спутниковой и инерциальной навигации, а не их замена.</p></Reveal></div>
+        <div className="overview-facts"><Reveal><h3>Звёзды и Солнце</h3><p>Звёздный сценарий — основа текущей концепции. Ориентирование по Солнцу исследуем отдельно: это ещё не готовый дневной режим.</p></Reveal><Reveal delay={.08}><h3>Пассивное наблюдение</h3><p>Оптическое измерение не требует передачи навигационного радиосигнала, который мог бы выдать датчик. Подмена или подавление GNSS не меняет звёздный рисунок, но может влиять на другие компоненты бортовой системы. Оптические помехи и другие способы обнаружения не исключены.</p></Reveal><Reveal delay={.16}><h3>Открытый горизонт</h3><p>Пустыни, льды и морские маршруты — возможные условия применения. Нужна видимость небесных ориентиров. Работа над облаками зависит от платформы и допустимых условий полёта; поляризационные методы при частичной облачности исследуем.</p></Reveal></div>
       </section>
 
       <ModuleStory />
@@ -117,16 +117,16 @@ function App() {
             <div className="scenario-index" role="group" aria-label="Выберите момент демонстрации">{scenarios.map((scenario, index) => <button key={scenario.label} className={activeScenario === index ? 'scenario active' : 'scenario'} aria-pressed={activeScenario === index} onClick={() => selectScenario(index)}><span className="scenario-title">{scenario.label}<ArrowUpRight size={20} /></span><span className="scenario-copy">{scenario.text}</span></button>)}<a href="/demo/index.html" target="_blank" rel="noreferrer" className="standalone-link">Открыть отдельно <ArrowUpRight size={16} /></a></div>
             <div className="demo-frame" data-ui="concept-demo"><iframe ref={iframe} src="/demo/index.html" title="Aster: интерактивный концептуальный макет ночного полёта" loading="lazy" onLoad={() => { const frame=iframe.current?.contentWindow as DemoWindow|null; if(frame?.document.body) frame.document.body.dataset.theme='dark'; frame?.starline?.seek(7); }} /></div>
           </div>
-          <p className="demo-caption">Концептуальная визуализация, не запись испытаний. Финальное сближение и посадка подразумевают локальное оптическое наведение. Звёзды и масштаб условные.</p>
+          <p className="demo-caption">Один из возможных гражданских сценариев, не запись испытаний. Связь со звёздами видна при подлёте и исчезает к началу сближения. Точное позиционирование и посадка не гарантируются Aster и требуют отдельных средств. Звёзды и масштаб условные.</p>
           <div className="mission-note"><Reveal><h3>Звёзды — для ориентации</h3><p>Датчик связывает направление своего взгляда со звёздным небом. Его результат используется в составе общей навигационной системы.</p></Reveal><Reveal delay={.08}><h3>Локальное наведение — для сближения</h3><p>Определение расстояния до объекта, обход препятствий и посадка не следуют из одного звёздного измерения. Для них нужны отдельные средства.</p></Reveal></div>
           <div className="mission-gallery"><figure><img src="/media/night-scene.webp" width="1200" height="1000" loading="lazy" alt="Концептуальный макет полёта между опорами промышленной инфраструктуры"/><figcaption>Объект наблюдения: условный линейный участок</figcaption></figure><figure><img src="/media/match.webp" width="1100" height="760" loading="lazy" alt="Звёздный рисунок и направление датчика на интерактивном макете"/><figcaption>Внешний ориентир: звёздный рисунок</figcaption></figure><figure><img src="/media/orientation.webp" width="800" height="760" loading="lazy" alt="Фрагмент коптера в концептуальном сценарии сближения"/><figcaption>Локальная задача: положение у объекта</figcaption></figure></div>
         </div>
       </section>
 
       <section id="applications" className="applications shell section-space">
-        <Reveal><h2>Для ночных задач</h2></Reveal>
+        <Reveal><h2>Гражданские<br />маршруты</h2></Reveal>
         <Reveal><NightEnvironment /></Reveal>
-        <div className="application-layout"><Reveal className="application-image"><img src="/figures/module-detail.webp" alt="Концептуальная компоновка Aster: отдельные оптический и электронный узлы" width="1100" height="900" loading="lazy" /><span>Компоновка под вашу платформу</span></Reveal><div className="application-content"><Reveal><p className="large-statement">Для промышленных БПЛА, которым нужен дополнительный источник ориентации при ночном мониторинге.</p></Reveal><div className="use-case-list"><Reveal delay={.08}><h3>Линейные объекты</h3><p>Возможный контекст: протяжённые участки промышленной инфраструктуры под открытым небом.</p></Reveal><Reveal delay={.16}><h3>Промышленные площадки</h3><p>При выборе сценария важно заранее оценить обзор неба, местную засветку и условия полёта.</p></Reveal><Reveal delay={.2}><h3>Проверка интеграции</h3><p>Начать стоит с требований к ориентации, компоновки аппарата и способов обмена с бортовой системой. Затем — проверять решение в заданных условиях.</p></Reveal></div><Reveal delay={.24}><a className="text-link" href="#contact">Рассмотреть вашу платформу <ArrowUpRight size={18} /></a></Reveal></div></div>
+        <div className="application-layout"><Reveal className="application-image"><img src="/figures/module-detail.webp" alt="Концептуальная компоновка Aster: отдельные оптический и электронный узлы" width="1100" height="900" loading="lazy" /><span>Компоновка под вашу платформу</span></Reveal><div className="application-content"><Reveal><p className="large-statement">Гражданские БАС дальнего следования — от логистики до спасательных и исследовательских миссий. Морская навигация — перспективное направление для проверки.</p></Reveal><div className="use-case-list"><Reveal delay={.08}><h3>Логистика и мониторинг</h3><p>Дальние маршруты, доставка и наблюдение за протяжённой инфраструктурой. Звёздная коррекция дополняет бортовые источники навигации при доступном небе.</p></Reveal><Reveal delay={.12}><h3>Спасение и исследования</h3><p>Миссии над пустынями, льдами и удалёнными территориями. Условия видимости, высоту и ограничения платформы нужно проверять для каждого маршрута.</p></Reveal><Reveal delay={.16}><h3>Навигация на море</h3><p>Рассматриваем применение на автономных и управляемых судах. Морская интеграция, качка и внешние условия требуют отдельной проработки и испытаний.</p></Reveal><Reveal delay={.2}><h3>Не только ночной горизонт</h3><p>Здесь показан ночной сценарий со звёздами. Ориентирование по Солнцу исследуем как возможное расширение, не заявляя готовый дневной режим.</p></Reveal></div><Reveal delay={.24}><a className="text-link" href="#contact">Рассмотреть вашу платформу <ArrowUpRight size={18} /></a></Reveal></div></div>
       </section>
 
       <FAQs />
@@ -134,7 +134,7 @@ function App() {
       <section id="contact" className="contact-section shell section-space"><div className="contact-panel"><div className="contact-copy"><Reveal><Mark className="contact-mark" /><h2>Ваш борт.<br />Наш ориентир.</h2><p>Расскажите о платформе и задаче. Заявка поступит команде Aster для обсуждения интеграции.</p></Reveal></div><ContactForm /></div></section>
     </main>
 
-    <footer className="footer"><div className="shell"><div className="footer-top"><p>Точка опоры —<br />звёздное небо.</p><div><a href="#technology">Технология</a><a href="#demo">Демонстрация</a><a href="#contact">Интеграция</a></div><a href="#top" className="back-top" aria-label="В начало страницы"><ArrowUpRight size={24} /></a></div><div className="footer-logo-wrap"><div className="footer-wordmark"><Mark />aster</div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Aster</span><span>Звёздное ориентирование для БПЛА</span><span>Концепция продукта</span></div></div></footer>
+    <footer className="footer"><div className="shell"><div className="footer-top"><p>Точка опоры —<br />небесные ориентиры.</p><div><a href="#technology">Технология</a><a href="#demo">Демонстрация</a><a href="#contact">Интеграция</a></div><a href="#top" className="back-top" aria-label="В начало страницы"><ArrowUpRight size={24} /></a></div><div className="footer-logo-wrap"><div className="footer-wordmark"><Mark />aster</div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Aster</span><span>Абсолютная коррекция навигации</span><span>Концепция продукта</span></div></div></footer>
   </div>;
 }
 

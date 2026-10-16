@@ -5,6 +5,28 @@ import { mkdir } from 'node:fs/promises';
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
 await mkdir('test-results', { recursive: true });
 const errors = [];
+async function checkAssemblyMotion(page, selector, target, button) {
+  const start = Number(await page.locator(selector).getAttribute('data-pose'));
+  await page.getByRole('button', { name: button, exact: true }).click();
+  const samples = await page.locator(selector).evaluate(el => new Promise(resolve => {
+    const values = [];
+    let start;
+    function frame(time) {
+      start ??= time;
+      values.push(Number(el.dataset.pose));
+      if (time - start < 400) requestAnimationFrame(frame);
+      else resolve(values);
+    }
+    requestAnimationFrame(frame);
+  }));
+  assert.ok(Math.abs(samples[0] - start) < .2, `${selector} snapped at transition start: ${samples[0]}`);
+  assert.ok(Math.abs(samples.at(-1) - start) > .03, `${selector} did not animate`);
+  assert.ok(samples.at(-1) > .03 && samples.at(-1) < .97, `${selector} skipped intermediate poses`);
+  for (let i = 1; i < samples.length; i++) {
+    assert.ok(target ? samples[i] >= samples[i-1] - .001 : samples[i] <= samples[i-1] + .001, `${selector} reversed unexpectedly`);
+  }
+  await page.waitForFunction(({selector,target}) => Math.abs(Number(document.querySelector(selector).dataset.pose)-target)<.001, {selector,target});
+}
 try {
   for (const width of [1440, 768, 390]) {
     const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
@@ -18,6 +40,14 @@ try {
     const headlines = await page.locator('h1,h2').evaluateAll(elements => elements.map(el => ({ text: el.textContent, lines: el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight) })));
     for (const heading of headlines) assert.ok(heading.lines < 2.1, `Long heading at ${width}: ${heading.text}`);
     await page.screenshot({ path: `test-results/hero-${width}.png` });
+    assert.match(await page.locator('.hero-copy p').textContent(), /Модуль абсолютной коррекции навигации/);
+    assert.match(await page.locator('#technology').textContent(), /не их замена/);
+    assert.match(await page.locator('#technology').textContent(), /Солнцу исследуем/);
+    assert.match(await page.locator('#principle').textContent(), /точное время/);
+    assert.match(await page.locator('#technology').textContent(), /не требует передачи навигационного радиосигнала/);
+    for (const text of ['Логистика', 'Спасение', 'Навигация на море', 'пустынями', 'льдами']) {
+      assert.ok((await page.locator('#applications').textContent()).includes(text), `Missing application: ${text}`);
+    }
 
     if (width <= 900) {
       await page.getByRole('button', { name: 'Открыть меню', exact: true }).click();
@@ -31,10 +61,9 @@ try {
 
     await page.locator('#module').scrollIntoViewIfNeeded();
     await page.locator('.module-figure [data-piece]').first().waitFor();
-    await page.getByRole('button', {name:'Собрать модуль',exact:true}).click();
-    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)<.01);
-    await page.getByRole('button', {name:'Разобрать модуль',exact:true}).click();
-    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)>.99);
+    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)>.999);
+    await checkAssemblyMotion(page, '.anatomy-module', 0, 'Собрать модуль');
+    await checkAssemblyMotion(page, '.anatomy-module', 1, 'Разобрать модуль');
     await page.locator('.module-description .gooey-nav__list:not(.gooey-nav__list--active) button').nth(1).click();
     assert.match(await page.locator('.module-detail h3').textContent(),/Из света получается кадр/);
 
@@ -48,19 +77,22 @@ try {
 
     await page.locator('#integration').scrollIntoViewIfNeeded();
     await page.locator('.aircraft-figure [data-piece]').first().waitFor();
-    await page.getByRole('button',{name:'Показать крепление',exact:true}).click();
-    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-drone').dataset.pose)>.99);
-    await page.getByRole('button',{name:'Установить модуль',exact:true}).click();
-    await page.waitForFunction(()=>Number(document.querySelector('.anatomy-drone').dataset.pose)<.01);
-    await page.getByRole('button',{name:'Небо закрыто',exact:true}).click();
-    assert.match(await page.locator('.aircraft-state').textContent(),/недоступен/);
+    await checkAssemblyMotion(page, '.anatomy-drone', 1, 'Показать крепление');
+    await checkAssemblyMotion(page, '.anatomy-drone', 0, 'Установить модуль');
+    assert.equal(await page.getByRole('button', {name:'Небо закрыто',exact:true}).count(),0);
+    assert.equal(await page.getByRole('button', {name:'Звёзды видны',exact:true}).count(),0);
     await page.getByRole('button',{name:'Приостановить анимацию коптера',exact:true}).click();
 
     await page.locator('#demo').scrollIntoViewIfNeeded();
     const frame = page.frameLocator('iframe');
     await frame.locator('#play').waitFor();
+    await page.locator('.scenario').nth(0).click();
+    assert.ok(Number(await frame.locator('#star-nav').getAttribute('opacity'))>.99, 'Star connection must be visible on approach');
+    await page.locator('.scenario').nth(1).click();
+    assert.ok(Number(await frame.locator('#star-nav').getAttribute('opacity'))>.99, 'Star orientation stage must retain the connection');
     await page.locator('.scenario').nth(2).click();
     assert.equal(Math.floor(Number(await frame.locator('body').getAttribute('data-time'))), 12);
+    assert.equal(Number(await frame.locator('#star-nav').getAttribute('opacity')),0,'No star connection during proximity positioning');
     await frame.locator('#play').click();
     await page.waitForTimeout(500);
     assert.ok(Number(await frame.locator('body').getAttribute('data-time')) > 12, 'Demo play did not advance');
@@ -116,7 +148,7 @@ try {
     await page.getByText('Заявка доставлена команде Aster в Telegram.', { exact: true }).waitFor();
     assert.equal(await page.locator('.contact-form [role="status"]').isVisible(), true);
     await page.close();
-    console.log(`PASS ${width}px: layout, navigation, module explode/select, star geometry, aircraft mounting/sky/pause, original demo, FAQ, contact (mock delivery)`);
+    console.log(`PASS ${width}px: revised copy, layout, navigation, bidirectional assembly, star geometry, aircraft mounting/pause, approach/proximity demo, FAQ, contact (mock delivery)`);
   }
 
   const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
@@ -131,7 +163,24 @@ try {
   await reduced.locator('#contact').scrollIntoViewIfNeeded();
   assert.equal(await reduced.locator('.contact-copy h2').isVisible(), true);
   assert.equal(await reduced.locator('.contact-copy').evaluate(el => getComputedStyle(el.firstElementChild).opacity), '1');
+  await reduced.locator('#module').scrollIntoViewIfNeeded();
+  await reduced.locator('.module-figure [data-piece]').first().waitFor();
+  await reduced.getByRole('button',{name:'Собрать модуль',exact:true}).click();
+  await reduced.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)===0);
+  await reduced.getByRole('button',{name:'Разобрать модуль',exact:true}).click();
+  await reduced.waitForFunction(()=>Number(document.querySelector('.anatomy-module').dataset.pose)===1);
   await reduced.close();
+  const standalone = await browser.newPage({ viewport: {width:390,height:844} });
+  standalone.on('pageerror', error=>errors.push(error.message));
+  await standalone.goto(new URL('/demo/index.html',process.env.TEST_URL || 'http://localhost:5173').href,{waitUntil:'networkidle'});
+  assert.equal(await standalone.locator('figcaption').isVisible(),true,'Standalone demo must show the limitation caption');
+  assert.match(await standalone.locator('figcaption').textContent(),/не гарантируются Aster/);
+  for (const [time,expected] of [[2,1],[7,1],[10,0],[12,0],[20,0]]) {
+    await standalone.evaluate(t=>window.starline.seek(t),time);
+    assert.equal(Number(await standalone.locator('#star-nav').getAttribute('opacity')),expected,`Incorrect standalone star connection at ${time}s`);
+  }
+  await standalone.screenshot({path:'test-results/standalone-390.png',fullPage:true});
+  await standalone.close();
   assert.deepEqual(errors, [], 'Browser errors or failed requests');
   console.log('PASS reduced motion, no runtime errors, no missing assets');
 } finally {

@@ -8,8 +8,8 @@ import { catalogue, rotatePoint, rollFromPair } from './model';
 const nodes = [
   {label:'Оптика',part:'optics',title:'Сначала — свет звёзд',copy:'Оптический тракт собирает свет из доступного участка неба. Для него важны открытое поле зрения, чистота оптики и отсутствие сильной засветки.',fact:'Вход: изображение звёздного неба'},
   {label:'Матрица',part:'sensor',title:'Из света получается кадр',copy:'Светочувствительная матрица превращает оптическое изображение в данные. Звёзды в кадре становятся точками, взаимное расположение которых можно анализировать.',fact:'Далее: положения звёзд в изображении'},
-  {label:'Обработка',part:'board',title:'Рисунок становится ориентиром',copy:'Наблюдаемые звёзды сопоставляются с каталогом. По найденному соответствию вычисляется ориентация датчика относительно звёздного неба.',fact:'Выход: данные об ориентации'},
-  {label:'Корпус',part:'body',title:'Прибор становится частью борта',copy:'Корпус и крепление задают положение датчика на аппарате. Для интеграции нужно согласовать компоновку, питание, интерфейс и связь осей датчика с осями БПЛА.',fact:'Интеграция: под конкретную платформу'},
+  {label:'Обработка',part:'board',title:'Рисунок становится ориентиром',copy:'Наблюдаемые звёзды сопоставляются с каталогом. По соответствию вычисляется ориентация относительно звёздного неба. Для привязки к земной системе координат нужны точное время и синхронизация измерений с бортовой системой.',fact:'Выход: ориентация и время измерения'},
+  {label:'Корпус',part:'body',title:'Прибор становится частью борта',copy:'Корпус и крепление задают положение датчика на платформе. Для интеграции нужно согласовать компоновку, питание, интерфейс и связь осей датчика с осями борта.',fact:'Интеграция: под конкретную платформу'},
 ];
 
 export function ModuleStory() {
@@ -21,7 +21,7 @@ export function ModuleStory() {
       <div className="section-heading"><AnimatedContent distance={24}><h2>Внутри Aster</h2></AnimatedContent><AnimatedContent distance={24} delay={.08}><p>Один компактный прибор связывает оптику, чувствительную матрицу и обработку изображения. Разберите его на узлы — и проследите путь от света до данных.</p></AnimatedContent></div>
       <div className="module-workbench">
         <figure className="anatomy-figure module-figure" data-ui="module-explorer">
-          <div className="figure-top"><span>Модуль звёздного ориентирования</span><span className="live-state"><i />Концептуальная компоновка</span></div>
+          <div className="figure-top"><span>Модуль коррекции навигации</span><span className="live-state"><i />Концептуальная компоновка</span></div>
           <AnatomyArt kind="module" expanded={expanded} selected={expanded?detail.part:''} />
           <div className="figure-bottom"><span>{expanded?'Оптика · матрица · электроника':'Модуль в сборе'}</span><button className="figure-button" aria-pressed={expanded} onClick={()=>setExpanded(!expanded)}><Layers2 size={16}/>{expanded?'Собрать модуль':'Разобрать модуль'}</button></div>
         </figure>
@@ -38,7 +38,7 @@ export function ModuleStory() {
 const stages=[
   {label:'Наблюдение',title:'Увидеть звёзды',copy:'В поле зрения попадает участок неба. Прежде чем искать ориентацию, нужно обнаружить в изображении сами звёзды и определить их положения.'},
   {label:'Сопоставление',title:'Узнать рисунок',copy:'Взаимное расположение звёзд сравнивается с каталогом. Совпадение рисунка связывает наблюдаемое изображение с известным участком неба.'},
-  {label:'Ориентация',title:'Определить поворот',copy:'По соответствию направлений получают ориентацию датчика. Здесь показан только поворот в плоскости: полная задача для БПЛА трёхмерна.'},
+  {label:'Ориентация',title:'Определить поворот',copy:'По соответствию направлений получают ориентацию датчика. Для её привязки к земной системе координат нужны точное время и синхронизация. Здесь показан только поворот в плоскости: полная задача трёхмерна.'},
 ];
 
 export function StarPrinciple() {
@@ -77,19 +77,18 @@ export function StarPrinciple() {
         </div>
         <div className="principle-steps"><div className="principle-tabs" role="group" aria-label="Этап определения ориентации">{stages.map(({label},index)=><button key={label} aria-pressed={stage===index} onClick={()=>setStage(index)}>{label}<span>{stage===index?<Minus size={16}/>:<Plus size={16}/>}</span></button>)}</div><div className="principle-copy"><h3>{stages[stage].title}</h3><p>{stages[stage].copy}</p></div><div className="roll-result"><span>{stage===2?'Вычисленный поворот':'Следующий шаг'}</span><output>{stage===2?readout:stage===0?'Найти звёзды':'Связать направления'}</output></div></div>
       </div>
-      <p className="figure-disclaimer">Интерактивная учебная модель: синтетические звёзды и поворот в одной плоскости. Число показывает геометрию этой модели, а не точность или результат испытаний Aster.</p>
+      <p className="figure-disclaimer">Для привязки звёздной ориентации к земной системе координат нужны точное время, синхронизация измерений и согласование систем координат. В этой учебной модели показаны только синтетические звёзды и поворот в одной плоскости, а не точность или результат испытаний Aster. Ориентирование по Солнцу — отдельное направление исследований.</p>
     </div>
   </section>;
 }
 
 export function AircraftStory() {
   const [detached,setDetached]=useState(false);
-  const [clearSky,setClearSky]=useState(true);
   const [animated,setAnimated]=useState(true);
   return <section className="aircraft-story section-space" id="integration"><div className="shell">
-    <div className="section-heading"><AnimatedContent distance={24}><h2>Свой ориентир<br/>на вашем борту</h2></AnimatedContent><AnimatedContent distance={24} delay={.08}><p>Aster не отдельный автопилот. Это дополнительный источник ориентации внутри бортовой системы. Место установки так же важно, как сам датчик.</p></AnimatedContent></div>
-    <div className="aircraft-layout"><div className="integration-copy"><div className="integration-point"><h3>Взгляд вверх</h3><p>Корпус аппарата, полезная нагрузка и винты не должны перекрывать выбранное поле зрения. Сильная засветка тоже влияет на наблюдение.</p></div><div className="integration-point"><h3>Общая система координат</h3><p>Для использования результата нужно знать положение датчика относительно осей БПЛА и согласовать обмен с бортовой системой.</p></div><div className="integration-point"><h3>Один из источников</h3><p>Данные Aster дополняют другие навигационные данные. При закрытом небе для ориентирования нужны другие источники.</p></div><a className="text-link" href="#contact">Обсудить вашу компоновку <ArrowUpRight size={18}/></a></div>
-      <figure className={`anatomy-figure aircraft-figure ${clearSky?'sky-open':'sky-closed'}`} data-ui="aircraft-integration"><div className="figure-top"><span>Коптер + модуль Aster</span><button className="aircraft-pause" aria-label={animated?'Приостановить анимацию коптера':'Воспроизвести анимацию коптера'} onClick={()=>setAnimated(!animated)}>{animated?<Pause size={15}/>:<Play size={15}/>}</button></div><div className="aircraft-sky" aria-hidden="true">{Array.from({length:30},(_,i)=><i key={i} style={{left:`${8+(i*37)%84}%`,top:`${10+(i*13)%65}%`}}/>)}</div><AnatomyArt kind="drone" detached={detached} flying={animated}/><div className="figure-bottom"><span className="aircraft-state"><i/>{clearSky?'Поле зрения открыто':'Звёздный ориентир недоступен'}</span><button className="figure-button" aria-pressed={detached} onClick={()=>setDetached(!detached)}>{detached?'Установить модуль':'Показать крепление'}<ArrowUpRight size={16}/></button></div><div className="sky-controls" role="group" aria-label="Условия наблюдения"><button aria-pressed={clearSky} onClick={()=>setClearSky(true)}>Звёзды видны</button><button aria-pressed={!clearSky} onClick={()=>setClearSky(false)}>Небо закрыто</button></div></figure>
-    </div><p className="figure-disclaimer">Условный макет установки. Геометрия коптера и движение винтов иллюстративны; это не схема монтажа и не модель лётных характеристик.</p>
+    <div className="section-heading"><AnimatedContent distance={24}><h2>Свой ориентир<br/>на вашем борту</h2></AnimatedContent><AnimatedContent distance={24} delay={.08}><p>Aster не отдельный автопилот. Это модуль коррекции в составе бортовой навигации. Здесь показан один пример установки на гражданском БАС, а не ограничение круга платформ.</p></AnimatedContent></div>
+    <div className="aircraft-layout"><div className="integration-copy"><div className="integration-point"><h3>Взгляд вверх</h3><p>Корпус, полезная нагрузка и винты не должны перекрывать поле зрения. При облачности возможен маршрут над облаками, если платформа и правила полёта это допускают. Поляризационные методы для частичной облачности пока исследуем.</p></div><div className="integration-point"><h3>Координаты и точное время</h3><p>Нужно знать положение датчика относительно осей платформы, обеспечить точное время для привязки к земной системе координат и синхронизировать измерения с бортовой системой.</p></div><div className="integration-point"><h3>Один из источников</h3><p>Aster дополняет GPS/ГЛОНАСС и инерциальную систему. Если небесные ориентиры недоступны, навигация опирается на другие источники. Дневной сценарий по Солнцу — предмет исследований.</p></div><a className="text-link" href="#contact">Обсудить вашу компоновку <ArrowUpRight size={18}/></a></div>
+      <figure className="anatomy-figure aircraft-figure" data-ui="aircraft-integration"><div className="figure-top"><span>Пример: БАС + модуль Aster</span><button className="aircraft-pause" aria-label={animated?'Приостановить анимацию коптера':'Воспроизвести анимацию коптера'} onClick={()=>setAnimated(!animated)}>{animated?<Pause size={15}/>:<Play size={15}/>}</button></div><div className="aircraft-sky" aria-hidden="true">{Array.from({length:30},(_,i)=><i key={i} style={{left:`${8+(i*37)%84}%`,top:`${10+(i*13)%65}%`}}/>)}</div><AnatomyArt kind="drone" detached={detached} flying={animated}/><div className="figure-bottom"><span className="aircraft-state"><i/>{detached?'Крепление и модуль разнесены':'Пример установки на платформе'}</span><button className="figure-button" aria-pressed={detached} onClick={()=>setDetached(!detached)}>{detached?'Установить модуль':'Показать крепление'}<ArrowUpRight size={16}/></button></div></figure>
+    </div><p className="figure-disclaimer">Условный макет установки на одной из возможных платформ. Геометрия коптера и движение винтов иллюстративны; это не схема монтажа и не модель лётных характеристик.</p>
   </div></section>;
 }

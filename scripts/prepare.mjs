@@ -17,13 +17,20 @@ for (const name of ['GooeyNav', 'AnimatedContent', 'Magnet']) {
 }
 
 const source = process.env.ASTER_DEMO_SOURCE || '/Users/kenda/starline-animation';
+// Never overwrite the project's reviewed behaviour with the old source copy.
+let demoExists = false;
+try { await access('public/demo/index.html'); demoExists = true; } catch { /* First import. */ }
+if (!demoExists) {
 let demo = await readFile(resolve(source, 'index.html'), 'utf8');
 const theme = await readFile('src/demo-theme.css', 'utf8');
 demo = demo.replace('</head>', `<style>${theme}</style></head>`)
   .replace('<title>STARLINE — Ночная посадка</title>', '<title>Aster — демонстрация ночного сценария</title>')
   .replace('<body class="iso" data-theme="dark">', '<body class="iso" data-theme="light">')
-  .replace('Светлая тема <span', 'Тёмная тема <span');
-// The original is self-contained. Only its presentation is changed in this copy.
+  .replace('Светлая тема <span', 'Тёмная тема <span')
+  .replace('<script type="module">', '<script type="module">document.body.dataset.embedded=String(window.self!==window.top);\n')
+  .replace('ease((t - 5) / 1.3) * (1 - ease((t - 9) / 1))', 'ease(t / 1.2) * (1 - ease((t - 9) / 1))');
+// The original source is not modified. Further edits live in the project copy.
 await writeFile('public/demo/index.html', demo);
+}
 await copyFile('/Users/kenda/Downloads/hf_20261014_210139_04e69240-5aa0-421a-b859-92f82622e3d5.mp4', 'public/media/aster-sky.mp4');
 console.log('React Bits components, supplied video and independently themed demo are ready.');

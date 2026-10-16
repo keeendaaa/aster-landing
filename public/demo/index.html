@@ -141,7 +141,9 @@ body.iso[data-theme="dark"] {
   --star:#c0e5ff; --nav:#dfff00; --blade:#b9d7ff; --control:#dfff00; --control-ink:#07102d;
 }
 main { max-width:none; padding:0; }
-.masthead,.intro,figcaption,footer,.caption-index,.card-top { display:none; }
+.masthead,.intro,footer,.caption-index,.card-top { display:none; }
+body[data-embedded="true"] figcaption { display:none; }
+figcaption { padding:20px 24px; border:0; font-size:14px; line-height:1.6; }
 .iso-plate { border:0; background:var(--anatomy-card); box-shadow:none; border-radius:0; }
 .iso-stage { padding:0!important; }
 .iso-svg { width:100%!important; max-width:100%!important; max-height:none!important; margin:0!important; }
@@ -174,14 +176,15 @@ main { max-width:none; padding:0; }
 </div>
 <div class="controls"><button id="play" class="play-button" aria-label="Приостановить анимацию"><span id="play-icon">Ⅱ</span></button><button id="replay" class="replay-button" aria-label="Повторить полёт">↺</button><div class="scrub"><input id="timeline" type="range" min="0" max="24" step="0.01" value="0" aria-label="Время анимации"><div class="timeline-labels"><span>00:00</span><span>ЗВЁЗДЫ</span><span>ПОСАДКА</span><span>00:24</span></div></div><output id="clock">00:00</output></div>
 <div class="phase-list"><button data-phase="0" data-time="0" class="phase-step"><span>01</span>Подлёт</button><button data-phase="1" data-time="5" class="phase-step"><span>02</span>По звёздам</button><button data-phase="2" data-time="10" class="phase-step"><span>03</span>Сближение</button><button data-phase="3" data-time="15" class="phase-step"><span>04</span>Посадка</button><button data-phase="4" data-time="20" class="phase-step"><span>05</span>Фиксация</button></div>
-<figcaption><p><span class="caption-lead">Ориентироваться. Сблизиться. Зафиксироваться.</span> Звёздный датчик определяет ориентацию аппарата; финальная посадка выполняется с локальным оптическим наведением. Седловой захват удерживает дрон на проводе после остановки винтов.</p><span class="caption-index">SVG / 24 SEC<br>ИНТЕРАКТИВНЫЙ МАКЕТ</span></figcaption>
+<figcaption><p><span class="caption-lead">Ориентация — не точное позиционирование.</span> При подлёте показана связь со звёздами. К началу сближения она исчезает: расстояние до объекта и посадка требуют отдельных средств локального наведения и не гарантируются Aster. Захват и посадка показаны условно.</p><span class="caption-index">SVG / 24 SEC<br>ИНТЕРАКТИВНЫЙ МАКЕТ</span></figcaption>
 </figure><footer><span>КОНЦЕПТУАЛЬНАЯ ВИЗУАЛИЗАЦИЯ · НЕ РУКОВОДСТВО К ПОЛЁТАМ У ЛЭП</span><span>ЗВЁЗДЫ УСЛОВНЫЕ · МАСШТАБ МАКЕТНЫЙ</span></footer><p class="sr-only" aria-live="polite" id="announce"></p></main>
-<script type="module">const DURATION = 24;
+<script type="module">document.body.dataset.embedded=String(window.self!==window.top);
+const DURATION = 24;
 const SPAN = 311.6;
 const WIRE_Y = 38;
 const LAND_X = 20;
 const PHASES = [
-  { at: 0, name: 'Подлёт', sub: 'Выход к пролёту' },
+  { at: 0, name: 'Подлёт', sub: 'Ориентация по звёздам на маршруте' },
   { at: 5, name: 'По звёздам', sub: 'Определение ориентации' },
   { at: 10, name: 'Сближение', sub: 'Локальное оптическое наведение' },
   { at: 15, name: 'Посадка', sub: 'Совмещение седла с проводом' },
@@ -209,7 +212,7 @@ function stateAt(time) {
   else if (t < 20) position = lerp3([LAND_X, WIRE_Y, end[2] + 24], end, ease((t - 15) / 5));
   else position = end;
   const phase = PHASES.reduce((index, p, i) => t >= p.at ? i : index, 0);
-  const starLock = ease((t - 5) / 1.3) * (1 - ease((t - 9) / 1));
+  const starLock = ease(t / 1.2) * (1 - ease((t - 9) / 1));
   const closed = ease((t - 20) / 1.4);
   const rpm = 1 - ease((t - 21.4) / 1.8);
   return { t, phase, position, starLock, closed, rpm,

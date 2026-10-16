@@ -45,6 +45,6 @@ export default function NightEnvironment() {
       </video>
       <button className="night-film-control" type="button" onClick={toggle} aria-label={playing ? 'Приостановить ночную сцену' : 'Воспроизвести ночную сцену'}>{playing ? <Pause size={17} /> : <Play size={17} />}</button>
     </div>
-    <figcaption>Визуализация ночного промышленного мониторинга. Сцена сгенерирована, не является записью испытаний Aster.</figcaption>
+    <figcaption>Один из сценариев: ночной мониторинг инфраструктуры. Сцена сгенерирована, не является записью испытаний Aster.</figcaption>
   </figure>;
 }
