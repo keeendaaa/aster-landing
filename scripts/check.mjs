@@ -6,19 +6,26 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH 
 await mkdir('test-results', { recursive: true });
 const errors = [];
 async function checkAssemblyMotion(page, selector, target, button) {
-  const start = Number(await page.locator(selector).getAttribute('data-pose'));
+  // Playwright may finish click/actionability waits after the animation has
+  // already advanced. Sample from the real click, not from the RPC return.
+  await page.locator(selector).evaluate(el => {
+    window.assemblyMotion = new Promise(resolve => {
+      document.addEventListener('click', () => {
+        const initial = Number(el.dataset.pose);
+        const values = [];
+        let start;
+        function frame(time) {
+          start ??= time;
+          values.push(Number(el.dataset.pose));
+          if (time - start < 400) requestAnimationFrame(frame);
+          else resolve({ start: initial, samples: values });
+        }
+        requestAnimationFrame(frame);
+      }, { once: true, capture: true });
+    });
+  });
   await page.getByRole('button', { name: button, exact: true }).click();
-  const samples = await page.locator(selector).evaluate(el => new Promise(resolve => {
-    const values = [];
-    let start;
-    function frame(time) {
-      start ??= time;
-      values.push(Number(el.dataset.pose));
-      if (time - start < 400) requestAnimationFrame(frame);
-      else resolve(values);
-    }
-    requestAnimationFrame(frame);
-  }));
+  const { start, samples } = await page.evaluate(() => window.assemblyMotion);
   assert.ok(Math.abs(samples[0] - start) < .2, `${selector} snapped at transition start: ${samples[0]}`);
   assert.ok(Math.abs(samples.at(-1) - start) > .03, `${selector} did not animate`);
   assert.ok(samples.at(-1) > .03 && samples.at(-1) < .97, `${selector} skipped intermediate poses`);
