@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
 await mkdir('test-results', { recursive: true });
@@ -104,15 +104,19 @@ try {
     await page.locator('[name="company"]').fill('Промышленный мониторинг');
     await page.locator('[name="email"]').fill('test@example.com');
     await page.locator('[name="task"]').fill('Ночной мониторинг при видимом звёздном небе.');
-    const downloadPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Скачать бриф', exact: true }).click();
-    const download = await downloadPromise;
-    const body = await readFile(await download.path(), 'utf8');
-    assert.match(body, /Тест Aster/);
-    assert.match(body, /test@example.com/);
+    await page.route('**/api/contact', async route => {
+      const body = route.request().postDataJSON();
+      assert.match(body.name, /Тест Aster/);
+      assert.equal(body.email, 'test@example.com');
+      assert.equal(body.consent, true);
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+    });
+    await page.locator('[name="consent"]').check();
+    await page.getByRole('button', { name: 'Отправить заявку', exact: true }).click();
+    await page.getByText('Заявка доставлена команде Aster в Telegram.', { exact: true }).waitFor();
     assert.equal(await page.locator('.contact-form [role="status"]').isVisible(), true);
     await page.close();
-    console.log(`PASS ${width}px: layout, navigation, module explode/select, star geometry, aircraft mounting/sky/pause, original demo, FAQ, brief`);
+    console.log(`PASS ${width}px: layout, navigation, module explode/select, star geometry, aircraft mounting/sky/pause, original demo, FAQ, contact (mock delivery)`);
   }
 
   const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });

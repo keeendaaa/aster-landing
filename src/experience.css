@@ -205,3 +205,6 @@
 @media(prefers-reduced-motion:reduce) {
   .star-instrument *, .aircraft-sky { transition:none; }
 }
+.contact-form .contact-consent { display:flex; flex-direction:row; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; }
+.contact-form .contact-consent input { width:18px; height:18px; flex:none; margin-top:2px; }
+.contact-form button:disabled { opacity:.6; cursor:wait; }

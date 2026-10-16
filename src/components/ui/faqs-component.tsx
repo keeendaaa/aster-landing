@@ -28,12 +28,12 @@ const faqItems = [
   {
     id: 'item-5',
     question: 'Как обсудить интеграцию?',
-    answer: <>Опишите платформу, условия полёта и требования к ориентации. Форма ниже поможет <a href="#contact" className={inlineLink}>подготовить бриф</a>. Сейчас она сохраняет текстовый файл на вашем устройстве и не отправляет данные команде.</>,
+    answer: <>Опишите платформу, условия полёта и требования к ориентации. Через форму можно <a href="#contact" className={inlineLink}>отправить заявку</a> команде Aster в Telegram.</>,
   },
 ];
 
 function ContactNote({ className }: { className?: string }) {
-  return <p className={className}>Не нашли свой вопрос? Начните с <a href="#contact" className={inlineLink}>брифа для вашей платформы</a>.</p>;
+  return <p className={className}>Не нашли свой вопрос? Отправьте <a href="#contact" className={inlineLink}>заявку по вашей платформе</a>.</p>;
 }
 
 export default function FAQs() {

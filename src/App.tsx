@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowDown, ArrowUpRight, Check, Download, Menu, Pause, Play, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ArrowDown, ArrowUpRight, Menu, Pause, Play, X } from 'lucide-react';
+import ContactForm from './components/ContactForm';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -46,7 +47,6 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [activeScenario, setActiveScenario] = useState(1);
-  const [briefReady, setBriefReady] = useState(false);
 
   useGSAP(() => {
     const media = gsap.matchMedia();
@@ -81,16 +81,6 @@ function App() {
     (iframe.current?.contentWindow as DemoWindow | null)?.starline?.seek(scenarios[index].time);
   };
 
-  const createBrief = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const content = `ASTER — запрос на интеграцию\n\nИмя: ${data.get('name')}\nКомпания: ${data.get('company')}\nEmail: ${data.get('email')}\nЗадача: ${data.get('task')}\n\nПродукт: модуль звёздного ориентирования для промышленного БПЛА.\nУсловия работы: ночной мониторинг при видимом звёздном небе.\nДля обсуждения: платформа, компоновка, питание, интерфейсы и требования к ориентации.\n`;
-    const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url; link.download = 'Aster-интеграция.txt'; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setBriefReady(true);
-  };
 
   return <div ref={root}>
     <a className="skip-link" href="#technology">К содержимому</a>
@@ -141,7 +131,7 @@ function App() {
 
       <FAQs />
 
-      <section id="contact" className="contact-section shell section-space"><div className="contact-panel"><div className="contact-copy"><Reveal><Mark className="contact-mark" /><h2>Ваш борт.<br />Наш ориентир.</h2><p>Расскажите о платформе и задаче. Подготовим краткий бриф для обсуждения интеграции Aster.</p></Reveal></div><form onSubmit={createBrief} className="contact-form"><div className="form-row"><label>Ваше имя<input name="name" autoComplete="name" placeholder="Александр" required maxLength={100} /></label><label>Компания<input name="company" autoComplete="organization" placeholder="Название компании" required maxLength={150} /></label></div><label>Рабочая почта<input name="email" type="email" autoComplete="email" placeholder="you@company.ru" required maxLength={200} /></label><label>О вашей задаче<textarea name="task" placeholder="Платформа, условия полёта, требования к навигации…" rows={3} required maxLength={2500} /></label><button type="submit" className="button button-dark">{briefReady ? 'Скачать ещё раз' : 'Скачать бриф'}{briefReady ? <Check size={17} /> : <Download size={17} />}</button><p className="form-note" role="status">{briefReady ? 'Бриф подготовлен. Файл сохранён на вашем устройстве. Данные никуда не отправлены.' : 'Бриф сохранится текстовым файлом. Данные остаются на вашем устройстве.'}</p></form></div></section>
+      <section id="contact" className="contact-section shell section-space"><div className="contact-panel"><div className="contact-copy"><Reveal><Mark className="contact-mark" /><h2>Ваш борт.<br />Наш ориентир.</h2><p>Расскажите о платформе и задаче. Заявка поступит команде Aster для обсуждения интеграции.</p></Reveal></div><ContactForm /></div></section>
     </main>
 
     <footer className="footer"><div className="shell"><div className="footer-top"><p>Точка опоры —<br />звёздное небо.</p><div><a href="#technology">Технология</a><a href="#demo">Демонстрация</a><a href="#contact">Интеграция</a></div><a href="#top" className="back-top" aria-label="В начало страницы"><ArrowUpRight size={24} /></a></div><div className="footer-logo-wrap"><div className="footer-wordmark"><Mark />aster</div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Aster</span><span>Звёздное ориентирование для БПЛА</span><span>Концепция продукта</span></div></div></footer>
